@@ -6,6 +6,6 @@ worlds.init()
 
 sword = worlds.Body("sword")
 
-sword.rotate_y(60.0)
+sword.rotation[1]=5.0
 
 worlds.begin_loop()
