@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:xml="http://www.w3.org/XML/1998/namespace"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   sodipodi:docbase="/home/dunk/cvs/soya-contrib/worms3d/data/svg"
+   sodipodi:docname="ui.svg"
+   inkscape:version="0.41"
+   sodipodi:version="0.32"
+   version="1.0"
+   x="0.0000000"
+   y="0.0000000"
+   width="512.00000"
+   height="512.00000"
+   id="svg2">
+  <metadata
+     id="metadata1355">
+    <rdf:RDF
+       id="RDF1357">
+      <cc:Work
+         id="Work1359"
+         rdf:about="">
+        <dc:format
+           id="format1361">image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage"
+           id="type1363" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="svg2"
+     inkscape:window-y="133"
+     inkscape:window-x="1355"
+     inkscape:zoom="0.86831672"
+     inkscape:cx="414.38136"
+     inkscape:cy="260.27426"
+     inkscape:window-height="778"
+     inkscape:window-width="860"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base" />
+  <defs
+     id="defs3">
+    <linearGradient
+       id="linearGradient2920">
+      <stop
+         style="stop-color:#0003ff;stop-opacity:1.0000000;"
+         offset="0.0000000"
+         id="stop2922" />
+      <stop
+         style="stop-color:#83dfe4;stop-opacity:1.0000000;"
+         offset="1.0000000"
+         id="stop2924" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient2087">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1.0000000;"
+         offset="0.0000000"
+         id="stop2089" />
+      <stop
+         style="stop-color:#ffffff;stop-opacity:0.0000000;"
+         offset="1.0000000"
+         id="stop2091" />
+    </linearGradient>
+    <linearGradient
+       x1="118.90246"
+       y1="1004.8509"
+       x2="204.02168"
+       y2="1004.8509"
+       id="linearGradient2926"
+       xlink:href="#linearGradient2920"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(2.871708,0.000000,0.000000,0.348225,-56.00000,53.00000)" />
+  </defs>
+  <rect
+     width="439.92145"
+     height="113.44449"
+     rx="30.860756"
+     ry="32.881062"
+     x="4.7883291"
+     y="4.6805811"
+     style="color:#000000;fill:#b2b2b2;fill-opacity:0.41847822;fill-rule:nonzero;stroke:#3a5490;stroke-width:1.5448344;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.0000000;stroke-dashoffset:0.0000000;stroke-opacity:1.0000000;marker:none;marker-start:none;marker-mid:none;marker-end:none;visibility:visible;display:inline;overflow:visible"
+     id="boundry_console" />
+  <text
+     x="360.46194"
+     y="20.074459"
+     style="opacity:0.46596859;writing-mode:lr-tb;text-anchor:start;font-family:Arial Black;stroke-opacity:1.0000000;stroke-linejoin:miter;stroke-linecap:butt;stroke-width:1.0000000pt;stroke:none;fill-opacity:1.0000000;fill:#000000;font-stretch:normal;font-weight:normal;font-variant:normal;font-style:normal;font-size:14.000000"
+     id="text2057"
+     xml:space="preserve"><tspan
+       x="360.46194"
+       y="20.074459"
+       id="tspan2059">Console</tspan></text>
+  <rect
+     width="219.46272"
+     height="144.31015"
+     rx="30.860758"
+     ry="32.881062"
+     x="5.8587213"
+     y="363.43219"
+     style="fill:#b2b2b2;fill-opacity:0.41847822;stroke:#3a5490;stroke-width:2.0769672;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
+     id="boundry_info" />
+  <rect
+     width="102.00000"
+     height="22.000000"
+     rx="3.9874716"
+     ry="8.6363277"
+     x="7.3626981"
+     y="127.00197"
+     style="fill:#b2b2b2;fill-opacity:0.41847822;stroke:#3a5490;stroke-width:2.0769672;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
+     id="boundry_meter" />
+  <rect
+     width="168.00000"
+     height="168.00000"
+     rx="30.860758"
+     ry="32.881062"
+     x="238.06799"
+     y="338.49942"
+     style="fill:#b2b2b2;fill-opacity:0.41847822;stroke:#3a5490;stroke-width:2.0769672;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000"
+     id="boundry_radar" />
+  <text
+     x="335.80054"
+     y="353.47253"
+     style="font-size:14.000000;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;opacity:0.46596858;fill:#000000;fill-opacity:1.0000000;stroke:none;stroke-width:1.0000000pt;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1.0000000;font-family:Arial Black;text-anchor:start;writing-mode:lr-tb"
+     id="text2127"
+     xml:space="preserve"><tspan
+       x="335.80054"
+       y="353.47253"
+       id="tspan2129">Radar</tspan></text>
+</svg>
