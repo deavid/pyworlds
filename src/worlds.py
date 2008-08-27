@@ -31,16 +31,14 @@ def init_basicscene():
 	light = soya.Light(scene)
 	light.set_xyz(5.0,0.0,20.0)
 
-	#camera = soya.Camera(scene)
-	camera = soya.TravelingCamera(scene)
-	camera.z = 10.0
-
-	soya.set_root_widget(camera)
+	camera = soya.Camera(scene)
+	#camera = soya.TravelingCamera(scene)
 	
 def begin_loop(callbackround=None, callbackadvance=None ):
-	global scene, callback_round, callback_advance
+	global scene, callback_round, callback_advance, camera
 	callback_round = callbackround
 	callback_advance = callbackadvance 
+	soya.set_root_widget(camera)
 	soya.MainLoop(scene).main_loop()
 	
 class SceneBody(soya.Body):
@@ -88,8 +86,8 @@ class Body(soya.Body):
 		self.rotate_y(proportion * self.rotation[1])
 		self.rotate_z(proportion * self.rotation[2])
 
-	def begin_round(self):
-		soya.Body.begin_round(self)		
+	#def begin_round(self):
+	#	soya.Body.begin_round(self)		
 
 class FollowBody(Body):
 	def __init__(self,filename,target):

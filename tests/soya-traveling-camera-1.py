@@ -115,9 +115,8 @@ for i in range(10):
 light = soya.Light(scene)
 light.set_xyz(2.0, 5.0, 0.0)
 
-# Creates a camera.
-
-camera = soya.TravelingCamera(scene)
+# The camera should created here!  
+camera = soya.TravelingCamera(scene)   
 
 traveling = soya.ThirdPersonTraveling(caterpillar_head)
 traveling.distance = 35.0
