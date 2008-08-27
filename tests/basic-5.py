@@ -10,27 +10,42 @@ head = worlds.Body("caterpillar_head")
 head.rotation[1]=5.0
 head.velocity.z=-0.1
 
-piece = {}
-previous = head
-for i in range(50):
-	piece[i] = worlds.FollowBody("caterpillar",previous)
-	previous = piece[i]
+new_springfactor = springfactor = 0
 
-worlds.camera.set_xyz(0,25,15)
+pieces = {}
+previous = head
+for i in range(100):
+	pieces[i] = worlds.FollowBody("caterpillar",previous)
+	previous = pieces[i]
+
+worlds.camera.set_xyz(0,35,25)
 worlds.camera.look_at(head)
 
 def mainloop():
-	global head
+	global head, new_springfactor, springfactor
 	if soya.sdlconst.K_UP in worlds.KEY: 		
-		head.velocity.z-=0.01; head.velocity.z*=1.05
+		head.velocity.z-=0.05; head.velocity.z*=1.01
 	else:
 		head.velocity.z/=1.1
 	if soya.sdlconst.K_DOWN in worlds.KEY:	
-		head.velocity.z+=0.01; 
+		head.velocity.z+=0.05; 
 	if soya.sdlconst.K_LEFT in worlds.KEY:	head.rotation[1]+=1
 	if soya.sdlconst.K_RIGHT in worlds.KEY:	head.rotation[1]-=1
-	head.rotation[1]/=1.1
+	head.rotation[1]/=1.05
+
+	if soya.sdlconst.K_1 in worlds.KEY:	new_springfactor=1
+	if soya.sdlconst.K_2 in worlds.KEY:	new_springfactor=10
+	if soya.sdlconst.K_3 in worlds.KEY:	new_springfactor=25
+	if soya.sdlconst.K_4 in worlds.KEY:	new_springfactor=50
+	if soya.sdlconst.K_5 in worlds.KEY:	new_springfactor=75
+	if soya.sdlconst.K_0 in worlds.KEY:	new_springfactor=0
+
+	if new_springfactor != springfactor:
+		global pieces
+		for i in pieces:
+			pieces[i].set_springfactor(new_springfactor)
 		
+		new_springfactor = springfactor
 		
 def renderloop(proportion):
 	pass
