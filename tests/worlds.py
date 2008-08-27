@@ -1,7 +1,8 @@
 #!/usr/bin/python 
 
 import sys, os, os.path, soya
-import soya.sdlconst
+from soya import sdlconst
+
 
 scene = None
 camera = None
@@ -12,6 +13,8 @@ KEY = {}
 callback_round = None
 callback_advance = None
 scene_body = None
+
+enable_fps = False
 
 def is_pyWorlds_installed():
 	print "pyWorlds seem to be installed and working."
@@ -39,7 +42,9 @@ def begin_loop(callbackround=None, callbackadvance=None ):
 	global scene, callback_round, callback_advance, camera
 	callback_round = callbackround
 	callback_advance = callbackadvance 
-	soya.set_root_widget(camera)
+	soya.set_root_widget(soya.widget.Group())
+	soya.root_widget.add(camera)
+	if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
 	soya.MainLoop(scene).main_loop()
 	
 class SceneBody(soya.Body):
@@ -57,10 +62,10 @@ class SceneBody(soya.Body):
 				else:
 					KEY[event[1]]=True
 					
-			elif event[0] == soya.sdlconst.KEYUP:
+			elif event[0] == sdlconst.KEYUP:
 				if event[1] in KEY:	del KEY[event[1]]
 				
-			elif event[0] == soya.sdlconst.QUIT:
+			elif event[0] == sdlconst.QUIT:
 				soya.MAIN_LOOP.stop()				
 		
 		if callback_round: callback_round()

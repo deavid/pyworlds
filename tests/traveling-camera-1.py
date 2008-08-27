@@ -1,7 +1,6 @@
 #!/usr/bin/python 
 import worlds
-from worlds import soya 
-
+from worlds import sdlconst,soya
 worlds.init()
 
 head = worlds.Body("caterpillar_head")
@@ -25,28 +24,29 @@ vel = 0
 
 def mainloop():
 	global head, new_springfactor, springfactor, vel
-	if soya.sdlconst.K_UP in worlds.KEY: 		
+	
+	if sdlconst.K_UP in worlds.KEY: 		
 		head.velocity.z=-vel
 		#vel *= 1.001
 		vel += .001
 	else:
 		head.velocity.z/=1.1
 		vel = 0.2
-	if soya.sdlconst.K_DOWN in worlds.KEY:	
+	if sdlconst.K_DOWN in worlds.KEY:	
 		head.velocity.z=0.2
-	if soya.sdlconst.K_LEFT in worlds.KEY:	head.rotation[1]+=1
-	if soya.sdlconst.K_RIGHT in worlds.KEY:	head.rotation[1]-=1
+	if sdlconst.K_LEFT in worlds.KEY:	head.rotation[1]+=1
+	if sdlconst.K_RIGHT in worlds.KEY:	head.rotation[1]-=1
 	
 	head.rotation[1]/=1.05
 
-	if soya.sdlconst.K_1 in worlds.KEY:	new_springfactor=0
-	if soya.sdlconst.K_2 in worlds.KEY:	new_springfactor=50
-	if soya.sdlconst.K_3 in worlds.KEY:	new_springfactor=65
-	if soya.sdlconst.K_4 in worlds.KEY:	new_springfactor=75
-	if soya.sdlconst.K_5 in worlds.KEY:	new_springfactor=80
-	if soya.sdlconst.K_6 in worlds.KEY:	new_springfactor=85
-	if soya.sdlconst.K_7 in worlds.KEY:	new_springfactor=90
-	if soya.sdlconst.K_8 in worlds.KEY:	new_springfactor=95
+	if sdlconst.K_1 in worlds.KEY:	new_springfactor=0
+	if sdlconst.K_2 in worlds.KEY:	new_springfactor=50
+	if sdlconst.K_3 in worlds.KEY:	new_springfactor=65
+	if sdlconst.K_4 in worlds.KEY:	new_springfactor=75
+	if sdlconst.K_5 in worlds.KEY:	new_springfactor=80
+	if sdlconst.K_6 in worlds.KEY:	new_springfactor=85
+	if sdlconst.K_7 in worlds.KEY:	new_springfactor=90
+	if sdlconst.K_8 in worlds.KEY:	new_springfactor=95
 
 	if new_springfactor != springfactor:
 		global pieces
