@@ -31,7 +31,8 @@ def init_basicscene():
 	light = soya.Light(scene)
 	light.set_xyz(5.0,0.0,20.0)
 
-	camera = soya.Camera(scene)
+	#camera = soya.Camera(scene)
+	camera = soya.TravelingCamera(scene)
 	camera.z = 10.0
 
 	soya.set_root_widget(camera)
@@ -82,10 +83,10 @@ class Body(soya.Body):
 		
 	def advance_time(self, proportion):
 		soya.Body.advance_time(self, proportion)
+		self.add_mul_vector(proportion, self.velocity)
 		self.rotate_x(proportion * self.rotation[0])
 		self.rotate_y(proportion * self.rotation[1])
 		self.rotate_z(proportion * self.rotation[2])
-		self.add_mul_vector(proportion, self.velocity)
 
 	def begin_round(self):
 		soya.Body.begin_round(self)		
@@ -99,11 +100,15 @@ class FollowBody(Body):
 		self.advance_time(-5)
 		self.target = target
 		self.target_distance = [.2,1.0,1.2]
-		self.target_springfactor = 0.01
-		self.target_velocity = 0.5
+		self.set_springfactor(0)
+
 		for i in range(25):
 			self.begin_round()
 			self.advance_time(0.5)
+	
+	def set_springfactor(self,factor):
+		self.target_springfactor = factor / 100.0
+		self.target_velocity = 1 - self.target_springfactor
 		
 	def begin_round(self):
 		Body.begin_round(self)		
@@ -130,7 +135,7 @@ class FollowBody(Body):
 		self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + (_med - distance) * vel ) / (self.target_springfactor * factor + 1 )
 		
 		if self.velocity.z<0: self.look_at(self.target)
-		if self.target.velocity.z>0: 
+		if self.target.velocity.z>0.01: 
 			self.target.look_at(self)
 			self.target.rotate_y(180)
 		
