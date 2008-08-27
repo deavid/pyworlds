@@ -21,15 +21,19 @@ traveling.distance = 35.0
 
 worlds.camera.add_traveling(traveling)
 worlds.camera.speed = 0.05
+vel = 0
 
 def mainloop():
-	global head, new_springfactor, springfactor
+	global head, new_springfactor, springfactor, vel
 	if soya.sdlconst.K_UP in worlds.KEY: 		
-		head.velocity.z=-1
+		head.velocity.z=-vel
+		#vel *= 1.001
+		vel += .001
 	else:
 		head.velocity.z/=1.1
+		vel = 0.2
 	if soya.sdlconst.K_DOWN in worlds.KEY:	
-		head.velocity.z=0.5
+		head.velocity.z=0.2
 	if soya.sdlconst.K_LEFT in worlds.KEY:	head.rotation[1]+=1
 	if soya.sdlconst.K_RIGHT in worlds.KEY:	head.rotation[1]-=1
 	
