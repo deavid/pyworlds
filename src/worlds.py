@@ -93,37 +93,45 @@ class Body(soya.Body):
 class FollowBody(Body):
 	def __init__(self,filename,target):
 		Body.__init__(self,filename)
+		self.x=target.x
+		self.y=target.y
+		self.z=target.z
+		self.advance_time(-5)
 		self.target = target
-		self.target_distance = [0.2,1.0,2.2]
-		self.target_springfactor = 100
-		self.target_speed = -1
-		self.begin_round()
-		self.advance_time(2)
+		self.target_distance = [.2,1.0,1.2]
+		self.target_springfactor = 0.01
+		self.target_velocity = 0.5
+		for i in range(25):
+			self.begin_round()
+			self.advance_time(0.5)
 		
 	def begin_round(self):
 		Body.begin_round(self)		
-		self.look_at(self.target)
+		
 		distance = self.distance_to(self.target)
-		if distance < self.target_distance[1]: 
-			_min = self.target_distance[0]
-			_med = self.target_distance[1]
-			_width = self.target_distance[1] - self.target_distance[0]
-			if distance < _min: 
-				self.velocity.z =  (_min - distance) 
+		_min = self.target_distance[0]
+		_med = self.target_distance[1]
+		_max = self.target_distance[2]
+		factor = 1
+		
+		if distance <= _min: factor = 0.0
+		elif distance >= _max: factor = 0.0
+		else:
+			if distance < _med:
+				factor = (distance - _min) / (_med - _min)
 			else:
-				factor = ( distance - _min ) / _width
-				self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + distance - _med) / (self.target_springfactor * factor + 1 )
-				
-		if distance > self.target_distance[2]: 
-			_max = self.target_distance[2]
-			_med = self.target_distance[1]
-			_width = self.target_distance[2] - self.target_distance[1]
-			if distance > _max: 
-				self.velocity.z =  distance - _max 
-			else:
-				factor = ( _max - distance ) / _width
-				self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + distance - _med) / (self.target_springfactor * factor + 1 )
-				
-		self.velocity.z *= self.target_speed
+				factor = (_max - distance) / (_max - _med)
+		
+		if factor < 0.1 : factor = 0.1
+		
+		factor2 = (_med - distance) / (_max - _min)  
+		if factor2 < 1: factor2 = 1
+		vel = self.target_velocity * factor2 
+		self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + (_med - distance) * vel ) / (self.target_springfactor * factor + 1 )
+		
+		if self.velocity.z<0: self.look_at(self.target)
+		if self.target.velocity.z>0: 
+			self.target.look_at(self)
+			self.target.rotate_y(180)
 		
 	
