@@ -17,6 +17,8 @@ worlds.camera = soya.TravelingCamera(worlds.scene)
 
 traveling = soya.ThirdPersonTraveling(pieces[5])
 traveling.distance = 35.0
+#traveling.offset_y = 20.0
+#traveling.offset_y2 = 10.0
 
 worlds.camera.add_traveling(traveling)
 worlds.camera.speed = 0.05
