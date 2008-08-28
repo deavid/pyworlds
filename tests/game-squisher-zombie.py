@@ -116,15 +116,35 @@ print "Available animations:", sorcerer_model.animations.keys()
 # -> Available animations: ['marche', 'tourneD', 'chute', 'tourneG', 'attente', 'recule']
 sorcerer = worlds.Body(sorcerer_model)
 sorcerer.rotation[1]=1
-sorcerer.animate_blend_cycle("marche")
+sorcerer.animate_blend_cycle("garde")
+sorcerer.scale(.6,.6,.6)
+sorcerer.state="stop"
+
 sorcerer.x=5
 sorcerer.z=6
 
 	
-worlds.camera.fov = 40
+worlds.camera.fov = 35
 frame = 0
 
 def mainloop():
+	global sorcerer
+	if sdlconst.K_UP in worlds.KEY:
+		if sorcerer.state!="walk":
+			sorcerer.animate_clear_cycle("garde")
+			sorcerer.animate_blend_cycle("marche")
+		sorcerer.state="walk"
+		if sorcerer.velocity.z>-0.1: sorcerer.velocity.z-=0.02
+	else:
+		if sorcerer.state!="stop":
+			sorcerer.animate_clear_cycle("marche")
+			sorcerer.animate_blend_cycle("garde")
+		sorcerer.state="stop"
+		if sorcerer.velocity.z!=0: 
+			sorcerer.velocity.z/=1.2
+			
+		
+	
 	pass
 
 def renderloop(proportion):
