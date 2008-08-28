@@ -2,6 +2,7 @@
 
 import sys, os, os.path, soya
 from soya import sdlconst
+from soya.widget
 
 
 scene = None
