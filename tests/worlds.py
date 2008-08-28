@@ -38,6 +38,8 @@ def init_basicscene():
 	
 
 	camera = soya.Camera(scene)
+	camera.set_xyz(0,2,5)
+	camera.rotate_x(-15)
 	#camera = soya.TravelingCamera(scene)
 	
 def begin_loop(callbackround=None, callbackadvance=None ):
