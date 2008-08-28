@@ -26,14 +26,15 @@ def init(create_basic=True):
 	soya.init()
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
 	scene = soya.World()
-	scene_body = SceneBody(scene,None)
 	if create_basic:
 		init_basicscene()
 
 def init_basicscene():
 	global scene, light, camera
 	light = soya.Light(scene)
-	light.set_xyz(5.0,0.0,20.0)
+	light.directional = 1
+	light.rotate_x(-90)
+	
 
 	camera = soya.Camera(scene)
 	#camera = soya.TravelingCamera(scene)
@@ -45,6 +46,7 @@ def begin_loop(callbackround=None, callbackadvance=None ):
 	soya.set_root_widget(soya.widget.Group())
 	soya.root_widget.add(camera)
 	if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
+	scene_body = SceneBody(scene,None)
 	soya.MainLoop(scene).main_loop()
 	
 class SceneBody(soya.Body):
@@ -74,12 +76,15 @@ class SceneBody(soya.Body):
 class Body(soya.Body):
 	def __init__(self,filename):
 		global scene
-		if filename in meshes:
-			mesh = meshes[filename]
+		if type(filename) == type(''):
+			if filename in meshes:
+				mesh = meshes[filename]
+			else:
+				mesh = soya.Model.get(filename)
+				meshes[filename] = mesh
 		else:
-			mesh = soya.Model.get(filename)
-			meshes[filename] = mesh
-		
+			# if it's not a text it is a mesh.
+			mesh = filename
 		
 		soya.Body.__init__(self,scene,mesh)
 		self.velocity = soya.Vector(self,0,0,0)
@@ -151,5 +156,60 @@ class FollowBody(Body):
 				self.velocity.z = (_min - distance) 
 			
 			self.velocity.z *= factor2
-				
+
+
+
+def Box(x,y,z,parent = None, material = None, insert_into = None, texcoord_size=1, origin=(0,0,0)):
+	"""Box(parent = None, material = None, insert_into = None) -> World
+
+Creates and returns a World in PARENT, containing a box(x,y,z) length centered
+on the origin, with material MATERIAL.
+
+If INSERT_INTO is not None, the cube's faces are inserted into it, instead of
+creating a new world."""
+	ox=origin[0]
+	oy=origin[1]
+	oz=origin[2]
 	
+	cube = insert_into or soya.World(parent)
+	s = texcoord_size
+	soya.Face(cube, [soya.Vertex(cube,  0.5*x+ox,  0.5 * y+oy,  0.5 * z+oz, 1.0*s, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox,  0.5 * y+oy,  0.5 * z+oz, 0.0, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox, -0.5 * y+oy,  0.5 * z+oz, 0.0, 0.0),
+									soya.Vertex(cube,  0.5*x+ox, -0.5 * y+oy,  0.5 * z+oz, 1.0*s, 0.0),
+									], material)
+
+	soya.Face(cube, [soya.Vertex(cube,  0.5*x+ox,  0.5 * y+oy, -0.5 * z+oz, 0.0, 1.0*s),
+									soya.Vertex(cube,  0.5*x+ox, -0.5 * y+oy, -0.5 * z+oz, 0.0, 0.0),
+									soya.Vertex(cube, -0.5*x+ox, -0.5 * y+oy, -0.5 * z+oz, 1.0*s, 0.0),
+									soya.Vertex(cube, -0.5*x+ox,  0.5 * y+oy, -0.5 * z+oz, 1.0*s, 1.0*s),
+									], material)
+	
+
+	soya.Face(cube, [soya.Vertex(cube,  0.5*x+ox,  0.5 * y+oy,  0.5 * z+oz, 1.0*s, 0.0),
+									soya.Vertex(cube,  0.5*x+ox,  0.5 * y+oy, -0.5 * z+oz, 1.0*s, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox,  0.5 * y+oy, -0.5 * z+oz, 0.0, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox,  0.5 * y+oy,  0.5 * z+oz, 0.0, 0.0),
+									], material)
+	soya.Face(cube, [soya.Vertex(cube,  0.5*x+ox, -0.5 * y+oy,  0.5 * z+oz, 1.0*s, 0.0),
+									soya.Vertex(cube, -0.5*x+ox, -0.5 * y+oy,  0.5 * z+oz, 1.0*s, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox, -0.5 * y+oy, -0.5 * z+oz, 0.0, 1.0*s),
+									soya.Vertex(cube,  0.5*x+ox, -0.5 * y+oy, -0.5 * z+oz, 0.0, 0.0),
+									], material)
+	
+	soya.Face(cube, [soya.Vertex(cube,  0.5*x+ox,  0.5 * y+oy,  0.5 * z+oz, 1.0*s, 1.0*s),
+									soya.Vertex(cube,  0.5*x+ox, -0.5 * y+oy,  0.5 * z+oz, 1.0*s, 0.0),
+									soya.Vertex(cube,  0.5*x+ox, -0.5 * y+oy, -0.5 * z+oz, 0.0, 0.0),
+									soya.Vertex(cube,  0.5*x+ox,  0.5 * y+oy, -0.5 * z+oz, 0.0, 1.0*s),
+									], material)
+	soya.Face(cube, [soya.Vertex(cube, -0.5*x+ox,  0.5 * y+oy,  0.5 * z+oz, 0.0, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox,  0.5 * y+oy, -0.5 * z+oz, 1.0*s, 1.0*s),
+									soya.Vertex(cube, -0.5*x+ox, -0.5 * y+oy, -0.5 * z+oz, 1.0*s, 0.0),
+									soya.Vertex(cube, -0.5*x+ox, -0.5 * y+oy,  0.5 * z+oz, 0.0, 0.0),
+									], material)
+	
+	return cube
+
+	
+
+
