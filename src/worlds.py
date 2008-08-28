@@ -216,3 +216,76 @@ creating a new world."""
 	
 
 
+def Sphere(parent = None, material = None, quality = (10,10), smooth_lit = 1, insert_into = None, 
+					texcoords=[(0,1),(0,1)], size=(1,1,1),position=(0,0,0)):
+	"""Sphere(parent = None, material = None, slices = 20, stacks = 20, insert_into = None, min_tex_x = 0.0, max_tex_x = 1.0, min_tex_y = 0.0, max_tex_y = 1.0) -> World
+
+Creates and returns a World in PARENT, containing a sphere of 1 radius centered
+on the origin, with material MATERIAL.
+
+SLICES and STACKS can be used to control the quality of the sphere.
+
+If INSERT_INTO is not None, the sphere's faces are inserted into it, instead of
+creating a new world.
+
+MIN/MAX_TEX_X/Y can be used to limit the range of the texture coordinates to the given
+values."""
+	from math import sin, cos
+	slices = quality[0]
+	stacks = quality[1]
+	
+	min_tex_x = texcoords[0][0] 
+	max_tex_x = texcoords[0][1]
+	min_tex_y = texcoords[1][0]
+	max_tex_y = texcoords[1][1]
+
+	px=position[0]
+	py=position[1]
+	pz=position[2]
+	
+	sx=size[0]
+	sy=size[1]
+	sz=size[2]
+	
+	
+	sphere = insert_into or World(parent)
+	
+	step1 = 6.28322 / slices
+	step2 = 3.14161 / stacks
+	
+	angle1 = 0.0
+	for i in xrange(slices):
+		angle2 = 0.0
+		j = 0
+		
+		face = soya.Face(sphere, [
+			soya.Vertex(sphere, cos(angle1        ) * sin(angle2        ) * sx + px, cos(angle2        ) * sy + py, sin(angle1        ) * sin(angle2        ) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i    ) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j    ) / stacks),
+			soya.Vertex(sphere, cos(angle1 + step1) * sin(angle2 + step2) * sx + px, cos(angle2 + step2) * sy + py, sin(angle1 + step1) * sin(angle2 + step2) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i + 1) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j + 1) / stacks),
+			soya.Vertex(sphere, cos(angle1        ) * sin(angle2 + step2) * sx + px, cos(angle2 + step2) * sy + py, sin(angle1        ) * sin(angle2 + step2) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i    ) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j + 1) / stacks),
+			], material)
+		face.smooth_lit = smooth_lit
+		angle2 += step2
+		
+		for j in range(1, stacks - 1):
+			face = soya.Face(sphere, [
+				soya.Vertex(sphere, cos(angle1        ) * sin(angle2        ) * sx + px, cos(angle2        ) * sy + py, sin(angle1        ) * sin(angle2        ) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i    ) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j    ) / stacks),
+				soya.Vertex(sphere, cos(angle1 + step1) * sin(angle2        ) * sx + px, cos(angle2        ) * sy + py, sin(angle1 + step1) * sin(angle2        ) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i + 1) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j    ) / stacks),
+				soya.Vertex(sphere, cos(angle1 + step1) * sin(angle2 + step2) * sx + px, cos(angle2 + step2) * sy + py, sin(angle1 + step1) * sin(angle2 + step2) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i + 1) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j + 1) / stacks),
+				soya.Vertex(sphere, cos(angle1        ) * sin(angle2 + step2) * sx + px, cos(angle2 + step2) * sy + py, sin(angle1        ) * sin(angle2 + step2) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i    ) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j + 1) / stacks),
+				], material)
+			face.smooth_lit = smooth_lit
+			angle2 += step2
+
+		j = stacks - 1
+		
+		face = soya.Face(sphere, [
+			soya.Vertex(sphere, cos(angle1        ) * sin(angle2        ) * sx + px, cos(angle2        ) * sy + py, sin(angle1        ) * sin(angle2        ) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i    ) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j    ) / stacks),
+			soya.Vertex(sphere, cos(angle1 + step1) * sin(angle2        ) * sx + px, cos(angle2        ) * sy + py, sin(angle1 + step1) * sin(angle2        ) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i + 1) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j    ) / stacks),
+			soya.Vertex(sphere, cos(angle1        ) * sin(angle2 + step2) * sx + px, cos(angle2 + step2) * sy + py, sin(angle1        ) * sin(angle2 + step2) * sz + pz, min_tex_x + (max_tex_x - min_tex_x) * float(i    ) / slices, min_tex_y + (max_tex_y - min_tex_y) * float(j + 1) / stacks),
+			], material)
+		face.smooth_lit = smooth_lit
+		
+		angle1 += step1
+		
+	return sphere
+
