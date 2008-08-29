@@ -18,6 +18,11 @@ white.shininess = 1  # 0 - plastic , 128 - metallic
 white.diffuse   = (0.9, 1.0, 0.9, 1.0) #rgba 
 white.specular  = (1.0, 1.0, 1.0, 0.3)
 
+energy = soya.Material()
+energy.shininess = 1  # 0 - plastic , 128 - metallic
+energy.diffuse   = (0.7, 1.0, 0.7, 0.2) #rgba 
+energy.specular  = (0.0, 1.0, 0.0, 0.1)
+energy.additive_blending = True
 
 glass_sharp = soya.Material()
 glass_sharp.shininess = 32  # 0 - plastic , 128 - metallic
@@ -28,19 +33,21 @@ glass_sharp.additive_blending = True
 
 glass_board = soya.Material()
 glass_board.shininess = 32  # 0 - plastic , 128 - metallic
-glass_board.diffuse   = (0.1, 0.15, 0.4, 1.0) #rgba 
+glass_board.diffuse   = (0.05, 0.10, 0.25, 1.0) #rgba 
 glass_board.specular  = (0.0, 0.0, 0.0, 0.0)
 glass_board.additive_blending = True
 glass_board.separate_specular = 1 # brighter specular
 
 glass_board2 = soya.Material()
 glass_board2.shininess = 64  # 0 - plastic , 128 - metallic
-glass_board2.diffuse   = (0.2, 0.3, 0.6, 1.0) #rgba 
+glass_board2.diffuse   = (0.1, 0.15, 0.3, 1.0) #rgba 
 glass_board2.specular  = (0.2, 0.7, 1.0, 1.0)
 #glass_board2.separate_specular = 1 # brighter specular
 
 point_world = soya.World(None)
-worlds.Sphere(position=(0.02,.02,0.02), size=(.1,.1,.1), material=white, quality=(6,6), insert_into=point_world)
+worlds.Sphere(position=(0.02,.02,0.02), size=(.12,.08,.1), material=energy, quality=(8,8), insert_into=point_world)
+worlds.Sphere(position=(0.02,.02,0.02), size=(.08,.08,.08), material=energy, quality=(6,6), insert_into=point_world)
+worlds.Sphere(position=(0.02,.02,0.02), size=(.06,.06,.06), material=energy, quality=(3,3), insert_into=point_world)
 mesh_point = point_world.to_model() 
 
 sharp_world = soya.World(None)
@@ -64,8 +71,8 @@ worlds.Box(1,0.1,1,None,black, sharp_world,1, (0,0.1,0))
 
 mesh_sharp = sharp_world.to_model()
 
-mesh_board_cell = worlds.Box(1,0.1,1,None,glass_board).to_model()
-mesh_board_cell2 = worlds.Box(1,0.1,1,None,glass_board2).to_model()
+mesh_board_cell = worlds.Box(.98,0.1,.98,None,glass_board).to_model()
+mesh_board_cell2 = worlds.Box(.98,0.1,.98,None,glass_board2).to_model()
 
 #mesh_board_cell = soya.cube.Cube(None).to_model()
 light = soya.Light(worlds.scene)
@@ -99,7 +106,7 @@ for x in range(11):
 	board.append(row)
 
 sharps={}
-for i in range(11*11/3):
+while len(sharps)<11*11/3:
 	x = random.randrange(11)
 	y = random.randrange(11)
 	if (x,y) not in sharps:
@@ -108,17 +115,11 @@ for i in range(11*11/3):
 		sharp.z = y
 		sharps[(x,y)]=sharp
 		points[(x,y)].visible=False
+		del points[(x,y)]
 	
 	
-sorcerer_model = soya.AnimatedModel.get("balazar")
-print "Available meshes    :", sorcerer_model.meshes    .keys()
-print "Available animations:", sorcerer_model.animations.keys()
-# -> Available animations: ['marche', 'tourneD', 'chute', 'tourneG', 'attente', 'recule']
-sorcerer = worlds.Body(sorcerer_model)
-sorcerer.rotation[1]=1
-sorcerer.animate_blend_cycle("garde")
+sorcerer = worlds.Character("balazar")
 sorcerer.scale(.6,.6,.6)
-sorcerer.state="stop"
 
 sorcerer.x=5
 sorcerer.z=6
@@ -130,28 +131,35 @@ frame = 0
 def mainloop():
 	global sorcerer
 	if sdlconst.K_UP in worlds.KEY:
-		if sorcerer.state!="walk":
-			sorcerer.animate_clear_cycle("garde")
-			sorcerer.animate_blend_cycle("marche")
-		sorcerer.state="walk"
+		sorcerer.character_setstate("walk")
 		if sorcerer.velocity.z>-0.1: sorcerer.velocity.z-=0.02
 	else:
-		if sorcerer.state!="stop":
-			sorcerer.animate_clear_cycle("marche")
-			sorcerer.animate_blend_cycle("garde")
-		sorcerer.state="stop"
+		sorcerer.character_setstate("stop")
 		if sorcerer.velocity.z!=0: 
 			sorcerer.velocity.z/=1.2
+
+	if sdlconst.K_LEFT in worlds.KEY:
+		sorcerer.desiredangle-=90
+		del worlds.KEY[sdlconst.K_LEFT]
+	elif sdlconst.K_RIGHT in worlds.KEY:
+		sorcerer.desiredangle+=90
+		del worlds.KEY[sdlconst.K_RIGHT]
+	
+		
+		
 			
 		
 	
 	pass
 
 def renderloop(proportion):
-	global frame
+	global frame,sorcerer,sharps
 	frame += proportion
 	worlds.camera.set_xyz(5+math.sin(frame/200.0)*2,12,16)
-	worlds.camera.look_at(board[5][6])
+	worlds.camera.look_at(sorcerer)
+	for key,sharp in sharps.iteritems():
+		worlds.look_at_elastic(sharp,sorcerer, sqrt_from=5, factor=0.01)
+	#worlds.look_at_elastic(worlds.camera, sorcerer, sqrt_from=360, factor=0.01)
 	
 	
 

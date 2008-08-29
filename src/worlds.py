@@ -3,12 +3,13 @@
 import sys, os, os.path, soya
 from soya import sdlconst
 import soya.widget
-
+import math
 
 scene = None
 camera = None
 light = None
 
+animated_meshes = {}
 meshes = {}
 KEY = {}
 callback_round = None
@@ -40,6 +41,7 @@ def init_basicscene():
 	camera = soya.Camera(scene)
 	camera.set_xyz(0,2,5)
 	camera.rotate_x(-15)
+	camera.back = 200
 	#camera = soya.TravelingCamera(scene)
 	
 def begin_loop(callbackround=None, callbackadvance=None ):
@@ -89,10 +91,11 @@ class Body(soya.Body):
 			# if it's not a text it is a mesh.
 			mesh = filename
 		
+		self.mesh = mesh
 		soya.Body.__init__(self,scene,mesh)
 		self.velocity = soya.Vector(self,0,0,0)
 		self.rotation = [0,0,0]
-		
+	
 	def advance_time(self, proportion):
 		soya.Body.advance_time(self, proportion)
 		self.add_mul_vector(proportion, self.velocity)
@@ -103,6 +106,107 @@ class Body(soya.Body):
 	#def begin_round(self):
 	#	soya.Body.begin_round(self)		
 
+class Character(soya.Body):
+	def __init__(self,filename):
+		global scene
+		if type(filename) == type(''):
+			if filename in animated_meshes:
+				mesh = animated_meshes[filename]
+			else:
+				mesh = soya.AnimatedModel.get(filename)
+				animated_meshes[filename] = mesh
+		else:
+			# if it's not a text it is a animated-mesh.
+			mesh = filename
+		self.mesh = mesh
+		# print "Available meshes    :", sorcerer_model.meshes    .keys()
+		# print "Available animations:", mesh.animations.keys()
+		# -> Available animations: ['marche', 'tourneD', 'chute', 'tourneG', 'attente', 'recule']
+
+		soya.Body.__init__(self,scene,mesh)
+		self.states = {
+						"stop" : ["garde","attente"], 
+						"walk" : ["marche"],
+						}
+		self.state = None
+		self.statecycle = None
+		self.character_setstate("stop")
+		self.velocity = soya.Vector(self,0,0,0)
+		self.rotation = [0,0,0]
+		self.desiredangle = 0
+		
+	def advance_time(self, proportion):
+		soya.Body.advance_time(self, proportion)
+		self.add_mul_vector(proportion, self.velocity)
+		self.rotate_x(proportion * self.rotation[0])
+		self.rotate_y(proportion * self.rotation[1])
+		self.rotate_z(proportion * self.rotation[2])
+
+		
+		
+	def get_absoluteangleXZ(self,vector=None):
+		if vector == None:
+			vector = soya.Vector(self,0,0,-1)
+
+		q=vector % scene # I mean an upper container.
+		h_xz=math.sqrt(q.x*q.x+q.z*q.z)
+		x=q.x/h_xz
+		z=q.z/h_xz
+		angle=math.asin(z)*180/math.pi
+		if x<0:
+			angle+=90  # place 0 degrees up
+			angle=-angle # mirror the result
+			angle-=90  # restore it.
+			
+		if angle<0: angle+=360
+		
+		return angle
+		
+		
+		
+
+	def begin_round(self):
+		soya.Body.begin_round(self)		
+		self.angle = self.get_absoluteangleXZ()
+		if self.desiredangle >= 360: self.desiredangle-=360
+		if self.desiredangle < 0: self.desiredangle+=360
+		
+		anglediff = self.desiredangle - self.angle
+		if anglediff > 180:	anglediff-=360
+		if anglediff < -180:	anglediff+=360
+		anglemov = anglediff/3.0
+		
+		if abs(self.rotation[1])>abs(anglemov): 
+			self.rotation[1]=(self.rotation[1]-anglemov)/2.0
+		else:
+			self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
+		if abs(anglediff)<1:
+			self.rotation[1]=-anglediff
+
+	def character_setstate(self,newstate):
+		if newstate==self.state: return False
+		if len(self.states[newstate])<1: raise
+		newstatecycle=None
+		try:
+			for statecycle in self.states[newstate]:
+				if statecycle in self.mesh.animations:
+					newstatecycle=statecycle
+					break;
+		except:
+			raise
+		if not newstatecycle: 
+			print "Not found any animation for %s: " % newstate,  self.states[newstate]
+			print "Available animations:", self.mesh.animations.keys()
+			raise
+
+		if self.statecycle:
+			self.animate_clear_cycle(self.statecycle)			
+			self.statecycle = None
+		self.animate_blend_cycle(newstatecycle)
+		self.statecycle = newstatecycle
+		self.state=newstate
+		return True
+	
 class FollowBody(Body):
 	def __init__(self,filename,target):
 		Body.__init__(self,filename)
@@ -112,7 +216,7 @@ class FollowBody(Body):
 		self.advance_time(-5)
 		self.target = target
 		self.target_distance = [0.1,.4,3]
-		self.set_springfactor(0)
+		self.set_springfactor(16)
 
 		for i in range(25):
 			self.begin_round()
@@ -130,35 +234,36 @@ class FollowBody(Body):
 		_med = self.target_distance[1]
 		_max = self.target_distance[2]
 		factor = 1
-		
+		Q = 1
 		if distance <= _min: factor = 0.0
 		elif distance >= _max: factor = 0.0
 		else:
+			Q = (_med - distance) 
 			if distance < _med:
+				Q /= math.sqrt(_med - _min)
 				factor = (distance - _min) / (_med - _min)
 			else:
+				Q /= math.sqrt(_max - _med)
 				factor = (_max - distance) / (_max - _med)
 		
-		if factor < 0.2 : factor = 0.2
+		
 		
 		factor2 = (_med - distance) / (_max - _min)  
 		if factor2 < 1: factor2 = 1
-		vel = self.target_velocity * factor2 
+		if self.velocity.z>1:
+			factor/=self.velocity.z
+		vel = self.target_velocity 
+		# self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + Q * vel ) / (self.target_springfactor * factor + 1 )
 		self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + (_med - distance) * vel ) / (self.target_springfactor * factor + 1 )
-		self.velocity.z *=  factor2
+		#self.velocity.z *=  factor2
 		
-		if self.velocity.z<0: self.look_at(self.target)
-		if self.target.velocity.z>0.01: 
-			self.target.look_at(self)
-			self.target.rotate_y(180)
-
-		self.velocity.z = (self.velocity.z + self.target.velocity.z * factor2) / (factor2+1.0)
-		
-		if self.velocity.z < 0: 
-			if self.velocity.z < (_min - distance) :
-				self.velocity.z = (_min - distance) 
+		if distance<_max:
+			look_at_elastic(self,self.target, sqrt_from=360, factor=(1-factor)+.1)
+		else:
+			self.look_at(self.target)
 			
-			self.velocity.z *= factor2
+
+					
 
 
 
@@ -289,3 +394,34 @@ values."""
 		
 	return sphere
 
+def look_at_elastic(self,p2,vector=None, factor=0.5, sqrt_from=15):
+	if p2 == None: raise Exception, "lookat_elastic: You must give at least the p2 parameter"
+	if vector == None:
+		vector = soya.Vector(self,0,0,-1000)
+
+	q=vector % scene # I mean an upper container.
+	
+	v1 = (self >> q)
+	v2 = (self >> p2)
+	
+	angle = v1.angle_to(v2)
+	
+	v12 = v1.cross_product(v2)
+	a12 = v1.dot_product(v2)
+	if a12<0: angle = -angle
+	if abs(angle)>90: angle=-angle
+	v12.normalize()
+	if abs(angle) < 0.1: 
+		return
+	if abs(angle) == 180.0: angle=180.1;
+
+	original_angle=angle
+	
+	if angle>sqrt_from:
+		angle/=sqrt_from
+		angle=math.sqrt(angle)
+		angle*=sqrt_from	
+	
+	angle*=factor
+	
+	self.rotate_axis(angle, v12)
