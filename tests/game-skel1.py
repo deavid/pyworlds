@@ -32,21 +32,21 @@ def create_level():
 			# Creates a terrain, from the heighmap "./images/map.png"
 			# The terrain is in the static part (=level_static), because it won't change along the game.
 			terrain = soya.Terrain(level_static)
-			terrain.y = -35.0
-			terrain.from_image(soya.Image.get("map.png"))
+			terrain.y = -65.0
+			terrain.from_image(soya.Image.get("map_hfields2.jpg"))
 			
 			# Sets how high is the terrain
-			terrain.multiply_height(50.0)
+			terrain.multiply_height(200.0)
 			
 			# These values are trade of between quality and speed
-			terrain.scale_factor = 1.5
-			terrain.texture_factor = 1.5
+			terrain.scale_factor = 3
+			terrain.texture_factor = 0.05
 			
 			# Set the texture on the terrain, according to the height
 			# (i.e. height 0.0 to 15.0 are textured with grass, ...)
-			terrain.set_material_layer(grass,   0.0,  15.0)
-			terrain.set_material_layer(ground, 15.0,  30.0)
-			terrain.set_material_layer(snow,   30.0,  50.0)
+			terrain.set_material_layer(grass,   0.0,  50.0)
+			terrain.set_material_layer(ground, 40.0,  90.0)
+			terrain.set_material_layer(snow,   80.0,  200.0)
 			
 			# Loads the model "./models/ferme.data"
 			# This model has been created in Blender
@@ -106,7 +106,7 @@ create_level()
 level = soya.World.get("level_demo")
 worlds.scene.add(level)
 
-worlds.camera.set_xyz(222.0, 0.0, 230.0)
+worlds.camera.set_xyz(697.0,5.0,545.0)
 worlds.camera.back = 500
 worlds.enable_fps = True
 
@@ -115,8 +115,9 @@ def mainloop():
 	if sdlconst.K_DOWN in worlds.KEY:		worlds.camera.z += 1
 	if sdlconst.K_LEFT in worlds.KEY:		worlds.camera.x -= 1
 	if sdlconst.K_RIGHT in worlds.KEY:	worlds.camera.x += 1
-	if sdlconst.K_SPACE in worlds.KEY:	worlds.camera.y += 1
-	if sdlconst.K_LCTRL in worlds.KEY:	worlds.camera.y -= 1
+	if sdlconst.K_SPACE in worlds.KEY:	worlds.camera.y += .5
+	if sdlconst.K_LCTRL in worlds.KEY:	worlds.camera.y -= .5
+	print worlds.camera.x,worlds.camera.y,worlds.camera.z
 	
 
 worlds.begin_loop(mainloop)
