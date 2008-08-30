@@ -258,7 +258,7 @@ class FollowBody(Body):
 		#self.velocity.z *=  factor2
 		
 		if distance<_max:
-			look_at_elastic(self,self.target, sqrt_from=360, factor=(1-factor)+.1)
+			look_at_elastic(self,self.target, sqrt_from=360, factor=(1-factor)+.3)
 		else:
 			self.look_at(self.target)
 			
