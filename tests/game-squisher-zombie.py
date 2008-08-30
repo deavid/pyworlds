@@ -105,8 +105,9 @@ for x in range(11):
 
 	board.append(row)
 
+
 sharps={}
-while len(sharps)<11*11/3:
+while len(sharps)<11*11/4:
 	x = random.randrange(11)
 	y = random.randrange(11)
 	if (x,y) not in sharps:
@@ -117,6 +118,10 @@ while len(sharps)<11*11/3:
 		points[(x,y)].visible=False
 		del points[(x,y)]
 	
+squisher = worlds.Character("echassien2@vert")
+squisher.scale(.5,.5,.5)
+squisher.x=2
+squisher.z=2
 	
 sorcerer = worlds.Character("balazar")
 sorcerer.scale(.6,.6,.6)
@@ -125,26 +130,28 @@ sorcerer.x=5
 sorcerer.z=6
 
 	
-worlds.camera.fov = 35
+worlds.camera.fov = 60
 frame = 0
 
 def mainloop():
 	global sorcerer
-	if sdlconst.K_UP in worlds.KEY:
+	walk=False
+	
+	if sdlconst.K_UP in worlds.KEY:			walk=True; sorcerer.desiredangle=270
+	if sdlconst.K_DOWN in worlds.KEY:		walk=True; sorcerer.desiredangle=+90
+	if sdlconst.K_LEFT in worlds.KEY:   walk=True; sorcerer.desiredangle=180
+	if sdlconst.K_RIGHT in worlds.KEY:	walk=True; sorcerer.desiredangle=0
+	anglewrong=abs(sorcerer.angle-sorcerer.desiredangle)
+	if anglewrong>180: anglewrong-=360; anglewrong=abs(anglewrong)
+	
+	if walk and anglewrong<20: 
+		
 		sorcerer.character_setstate("walk")
 		if sorcerer.velocity.z>-0.1: sorcerer.velocity.z-=0.02
-	else:
+	else:	
 		sorcerer.character_setstate("stop")
 		if sorcerer.velocity.z!=0: 
 			sorcerer.velocity.z/=1.2
-
-	if sdlconst.K_LEFT in worlds.KEY:
-		sorcerer.desiredangle-=90
-		del worlds.KEY[sdlconst.K_LEFT]
-	elif sdlconst.K_RIGHT in worlds.KEY:
-		sorcerer.desiredangle+=90
-		del worlds.KEY[sdlconst.K_RIGHT]
-	
 		
 		
 			
@@ -157,9 +164,9 @@ def renderloop(proportion):
 	frame += proportion
 	worlds.camera.set_xyz(5+math.sin(frame/200.0)*2,12,16)
 	worlds.camera.look_at(sorcerer)
-	for key,sharp in sharps.iteritems():
-		worlds.look_at_elastic(sharp,sorcerer, sqrt_from=5, factor=0.01)
-	#worlds.look_at_elastic(worlds.camera, sorcerer, sqrt_from=360, factor=0.01)
+	dist = worlds.camera.distance_to(sorcerer)
+	dfov = 500/dist
+	worlds.camera.fov = (worlds.camera.fov  * 10+ dfov) / 11.0
 	
 	
 
