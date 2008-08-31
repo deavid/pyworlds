@@ -43,7 +43,22 @@ def init_basicscene():
 	camera.rotate_x(-15)
 	camera.back = 200
 	#camera = soya.TravelingCamera(scene)
+
+def xy_toangle(x1,y1):
+	h_xz=math.sqrt(x1*x1+y1*y1)
+	x=x1/h_xz
+	z=y1/h_xz
+	angle=math.asin(z)*180/math.pi
+	if x<0:
+		angle+=90  # place 0 degrees up
+		angle=-angle # mirror the result
+		angle-=90  # restore it.
+		
+	if angle<0: angle+=360
 	
+	return angle
+
+
 def begin_loop(callbackround=None, callbackadvance=None ):
 	global scene, callback_round, callback_advance, camera
 	callback_round = callbackround
@@ -149,18 +164,8 @@ class Character(soya.Body):
 			vector = soya.Vector(self,0,0,-1)
 
 		q=vector % scene # I mean an upper container.
-		h_xz=math.sqrt(q.x*q.x+q.z*q.z)
-		x=q.x/h_xz
-		z=q.z/h_xz
-		angle=math.asin(z)*180/math.pi
-		if x<0:
-			angle+=90  # place 0 degrees up
-			angle=-angle # mirror the result
-			angle-=90  # restore it.
-			
-		if angle<0: angle+=360
 		
-		return angle
+		return xy_toangle(q.x,q.z)
 		
 		
 		
@@ -185,6 +190,7 @@ class Character(soya.Body):
 
 	def character_setstate(self,newstate):
 		if newstate==self.state: return False
+		if not hasattr(self.mesh,"animations"): return False
 		if len(self.states[newstate])<1: raise
 		newstatecycle=None
 		try:
