@@ -125,9 +125,10 @@ class BoardCharacter(worlds.Character):
 				self.character_setstate("stop")
 				self.velocity.z = -self.distance / 3.0
 				self.character_updateangle()
-			elif self.distance>0.4 and anglewrong<20 and self.velocity.z>-0.1: 
+			elif self.distance>0.4 and self.velocity.z>-0.5: 
 				self.character_setstate("walk")
-				self.velocity.z-=0.02
+				if anglewrong<20: anglewrong = 20.0
+				self.velocity.z =-2 / anglewrong
 				self.character_updateangle()
 		else:
 			if self.map_xy != None:
@@ -185,8 +186,10 @@ class BoardCharacter(worlds.Character):
 		self.desired_z+dy) :
 			self.desired_x+=dx
 			self.desired_z+=dy
-			
+			self.update_mapxy()
 			self.character_updateangle()
+			return True
+		return False
 	
 	def character_updateangle(self):
 		dx=self.desired_x-self.x
@@ -321,12 +324,14 @@ while num_sharps<11*11/5:
 		num_sharps += 1
 		
 num_enemies = 0
+enemies=[]
 while num_enemies < 2:
 	x = random.randrange(3)+8
 	y = random.randrange(5)+num_enemies*5
 	if boardmap.getxy(x,y) == None:
 		squisher = BoardCharacter("chef_morkul",x,y,boardmap,"$")
 		squisher.scale(.5,.5,.5)
+		enemies.append(squisher)
 		num_enemies += 1
 
 num_humans = 0 
@@ -350,28 +355,56 @@ worlds.camera.fov = 60
 frame = 0
 
 def mainloop():
+	if human_move():
+		enemies_move()
+
+
+def human_move():
 	global sorcerer
 	if sorcerer.is_inplace():
-		if sdlconst.K_UP in worlds.KEY:			
-			sorcerer.character_move(0,-1)
-			return
+		if sdlconst.K_UP in worlds.KEY:		
+			del worlds.KEY[sdlconst.K_UP]
+			return sorcerer.character_move(0,-1)
 		if sdlconst.K_DOWN in worlds.KEY:				
-			sorcerer.character_move(0,1)
-			return
+			del worlds.KEY[sdlconst.K_DOWN]
+			return sorcerer.character_move(0,1)
 		if sdlconst.K_LEFT in worlds.KEY:   	
-			sorcerer.character_move(-1,0)
-			return
+			del worlds.KEY[sdlconst.K_LEFT]
+			return sorcerer.character_move(-1,0)
 		if sdlconst.K_RIGHT in worlds.KEY:	
-			sorcerer.character_move(1,0)
-			return
+			del worlds.KEY[sdlconst.K_RIGHT]
+			return sorcerer.character_move(1,0)
+	
+	return False
 
-	
+
+def enemies_move():
+	global enemies,sorcerer
+	for enemy in enemies:
+		dx1 = sorcerer.x - enemy.x 
+		dy1 = sorcerer.z - enemy.z
+		dx = 1 if dx1 > 0 else -1
+		dy = 1 if dy1 > 0 else -1
+		if abs(dx1) < 1: 
+			dx1 = 1
+			dy1 *=10
+
+		if abs(dy1) < 1: 
+			dy1 = 1
+			dx1 *=10
+		dx1=round(abs(dx1),0)
+		dy1=round(abs(dy1),0)
 		
-		
-			
-		
-	
-	pass
+		if random.randrange(dx1) > random.randrange(dy1):
+			if enemy.character_move(dx,0): continue
+			if enemy.character_move(0,dy): continue
+			if enemy.character_move(0,-dy): continue
+			if enemy.character_move(-dx,0): continue
+		else:
+			if enemy.character_move(0,dy): continue
+			if enemy.character_move(dx,0): continue
+			if enemy.character_move(-dx,0): continue
+			if enemy.character_move(0,-dy): continue
 
 def renderloop(proportion):
 	global frame,sorcerer,sharps
