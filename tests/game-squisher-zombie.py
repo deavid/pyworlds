@@ -26,7 +26,16 @@ class BoardMap():
 			for i in range(rows):
 				col.append(None)
 			
+	def checkxy(self,x,y):
+		if ( x < 0 or
+			x >= self.cols or
+			y < 0 or
+			y >= self.rows ):
+				return False
+		return True
+
 	def setxy(self,x,y,obj):
+		if not self.checkxy(x,y): return False
 		p_obj=self.getxy(x,y)
 		if p_obj != None:
 			try:
@@ -44,6 +53,7 @@ class BoardMap():
 			print	"BoardMap.setxy(%d,%d,obj): Error ocurred when trying to set x,y" % (x,y)
 
 	def getxy(self,x,y):
+		if not self.checkxy(x,y): return False
 		try:
 			return self.boardmap[x][y]
 		except:
@@ -51,6 +61,7 @@ class BoardMap():
 			return None
 
 	def iswall(self,x,y):
+		if not self.checkxy(x,y): return True
 		p = self.getwall(x,y)
 		if p == None: return False
 		if p == "": return False
@@ -58,6 +69,7 @@ class BoardMap():
 		return True
 		
 	def getwall(self,x,y):
+		if not self.checkxy(x,y): return False
 		try:
 			return self.wallmap[x][y]
 		except:
@@ -65,12 +77,14 @@ class BoardMap():
 			return None
 
 	def setwall(self,x,y,wall="#"):
+		if not self.checkxy(x,y): return False
 		try:
 			self.wallmap[x][y]=wall
 		except:
 			print	"BoardMap.setwall(%d,%d,obj): Error ocurred when trying to set x,y" % (x,y)
 
 	def unsetwall(self,x,y):
+		if not self.checkxy(x,y): return False
 		try:
 			self.wallmap[x][y]=None
 		except:
@@ -85,7 +99,7 @@ class BoardMap():
 
 class BoardCharacter(worlds.Character):
 	""" This is a character that can move along in a board made of rectangles. """
-	def __init__(self,filename,x,y,board):
+	def __init__(self,filename,x,y,board,char=None):
 		worlds.Character.__init__(self,filename)
 		self.x=x
 		self.z=y
@@ -94,6 +108,7 @@ class BoardCharacter(worlds.Character):
 		self.map_xy = None
 		self.boardmap = board
 		self.boardmap.setxy(x,y,self)
+		self.boardmap.setwall(x,y,char)
 		
 		
 	def begin_round(self):
@@ -120,7 +135,8 @@ class BoardCharacter(worlds.Character):
 				if (round(mx,1) != round(self.desired_x,1)
 					or round(my,1) != round(self.desired_z,1)):
 						self.update_mapxy()
-					
+			else:
+				self.update_mapxy()
 			self.velocity.z /=1.2
 			self.x=(self.x*10+self.desired_x)/11.0
 			self.z=(self.z*10+self.desired_z)/11.0
@@ -144,29 +160,33 @@ class BoardCharacter(worlds.Character):
 			return False
 		
 	def update_mapxy(self):
-		if self.map_xy==None: return False
-		mx,my= self.map_xy
 		dx = self.desired_x
 		dy = self.desired_z
-		self.boardmap.setxy(mx,my,None)
-		replaced_obj=self.boardmap.getxy(dx,dy)
-		if replaced_obj!=None:
-			try:
-				replaced_obj.deleted_by(self)
-			except:
-				pass
+		if self.map_xy!=None: 
+			mx,my= self.map_xy
+			self.boardmap.setxy(mx,my,None)
+			self.boardmap.unsetwall(mx,my)
+			replaced_obj=self.boardmap.getxy(dx,dy)
+			if replaced_obj!=None:
+				try:
+					replaced_obj.deleted_by(self)
+				except:
+					pass
 		
 		self.boardmap.setxy(dx,dy,self)
+		self.boardmap.setwall(dx,dy)
 		
 		return True
 		
 					
 
 	def character_move(self,dx,dy):
-		self.desired_x+=dx
-		self.desired_z+=dy
-		
-		self.character_updateangle()
+		if not self.boardmap.iswall(self.desired_x+dx,
+		self.desired_z+dy) :
+			self.desired_x+=dx
+			self.desired_z+=dy
+			
+			self.character_updateangle()
 	
 	def character_updateangle(self):
 		dx=self.desired_x-self.x
@@ -305,7 +325,7 @@ while num_enemies < 2:
 	x = random.randrange(3)+8
 	y = random.randrange(5)+num_enemies*5
 	if boardmap.getxy(x,y) == None:
-		squisher = BoardCharacter("chef_morkul",x,y,boardmap)
+		squisher = BoardCharacter("chef_morkul",x,y,boardmap,"$")
 		squisher.scale(.5,.5,.5)
 		num_enemies += 1
 
@@ -314,7 +334,7 @@ while num_humans < 1:
 	x = random.randrange(3)
 	y = random.randrange(5)+3
 	if boardmap.getxy(x,y) == None:
-		sorcerer = BoardCharacter("balazar",x,y,boardmap)
+		sorcerer = BoardCharacter("balazar",x,y,boardmap,"H")
 		sorcerer.scale(.6,.6,.6)
 		num_humans += 1
 
@@ -332,10 +352,19 @@ frame = 0
 def mainloop():
 	global sorcerer
 	if sorcerer.is_inplace():
-		if sdlconst.K_UP in worlds.KEY:			sorcerer.character_move(0,-1)
-		if sdlconst.K_DOWN in worlds.KEY:		sorcerer.character_move(0,1)
-		if sdlconst.K_LEFT in worlds.KEY:   sorcerer.character_move(-1,0)
-		if sdlconst.K_RIGHT in worlds.KEY:	sorcerer.character_move(1,0)
+		if sdlconst.K_UP in worlds.KEY:			
+			sorcerer.character_move(0,-1)
+			return
+		if sdlconst.K_DOWN in worlds.KEY:				
+			sorcerer.character_move(0,1)
+			return
+		if sdlconst.K_LEFT in worlds.KEY:   	
+			sorcerer.character_move(-1,0)
+			return
+		if sdlconst.K_RIGHT in worlds.KEY:	
+			sorcerer.character_move(1,0)
+			return
+
 	
 		
 		
