@@ -6,6 +6,195 @@ import soya.cube
 import soya.sdlconst as sdlconst
 import math,random
 
+
+class BoardMap():
+	def __init__(self,rows,cols):
+		self.rows=rows
+		self.cols=cols
+		
+		self.boardmap=[]
+		self.wallmap=[]
+		for i in range(cols):
+			self.boardmap.append([])
+			self.wallmap.append([])
+		
+		for col in self.boardmap:
+			for i in range(rows):
+				col.append(None)
+			
+		for col in self.wallmap:
+			for i in range(rows):
+				col.append(None)
+			
+	def setxy(self,x,y,obj):
+		p_obj=self.getxy(x,y)
+		if p_obj != None:
+			try:
+				p_obj.map_xy = None
+			except:
+				pass
+			
+		try:
+			self.boardmap[x][y]=obj
+			try: 
+				obj.map_xy = (x,y)
+			except:
+				pass
+		except:
+			print	"BoardMap.setxy(%d,%d,obj): Error ocurred when trying to set x,y" % (x,y)
+
+	def getxy(self,x,y):
+		try:
+			return self.boardmap[x][y]
+		except:
+			print	"BoardMap.getxy(%d,%d): Error ocurred when trying to get x,y" % (x,y)
+			return None
+
+	def iswall(self,x,y):
+		p = self.getwall(x,y)
+		if p == None: return False
+		if p == "": return False
+		if p == " ": return False
+		return True
+		
+	def getwall(self,x,y):
+		try:
+			return self.wallmap[x][y]
+		except:
+			print	"BoardMap.getwall(%d,%d): Error ocurred when trying to get x,y" % (x,y)
+			return None
+
+	def setwall(self,x,y,wall="#"):
+		try:
+			self.wallmap[x][y]=wall
+		except:
+			print	"BoardMap.setwall(%d,%d,obj): Error ocurred when trying to set x,y" % (x,y)
+
+	def unsetwall(self,x,y):
+		try:
+			self.wallmap[x][y]=None
+		except:
+			print	"BoardMap.unsetwall(%d,%d,obj): Error ocurred when trying to set x,y" % (x,y)
+
+
+
+
+
+
+
+
+class BoardCharacter(worlds.Character):
+	""" This is a character that can move along in a board made of rectangles. """
+	def __init__(self,filename,x,y,board):
+		worlds.Character.__init__(self,filename)
+		self.x=x
+		self.z=y
+		self.desired_x=x
+		self.desired_z=y
+		self.map_xy = None
+		self.boardmap = board
+		self.boardmap.setxy(x,y,self)
+		
+		
+	def begin_round(self):
+		worlds.Character.begin_round(self)		
+		anglewrong=abs(self.angle-self.desiredangle)
+		if anglewrong>180: 
+			anglewrong-=360; 
+			anglewrong=abs(anglewrong)
+		self.distance=self.dist_to_walk()
+			
+		if self.distance>0.2:
+			
+			if self.distance<-self.velocity.z*3.0:
+				self.character_setstate("stop")
+				self.velocity.z = -self.distance / 3.0
+				self.character_updateangle()
+			elif self.distance>0.4 and anglewrong<20 and self.velocity.z>-0.1: 
+				self.character_setstate("walk")
+				self.velocity.z-=0.02
+				self.character_updateangle()
+		else:
+			if self.map_xy != None:
+				mx,my= self.map_xy
+				if (round(mx,1) != round(self.desired_x,1)
+					or round(my,1) != round(self.desired_z,1)):
+						self.update_mapxy()
+					
+			self.velocity.z /=1.2
+			self.x=(self.x*10+self.desired_x)/11.0
+			self.z=(self.z*10+self.desired_z)/11.0
+			
+	def advance_time(self, proportion):
+		worlds.Character.advance_time(self, proportion)
+		
+	def is_inplace(self):
+		if self.map_xy != None:
+			mx,my= self.map_xy
+			if (round(mx,1) != round(self.desired_x,1)
+				or round(my,1) != round(self.desired_z,1)):
+				return False
+			else:
+				return True
+				
+		if ( abs(self.desired_x-self.x)<0.1 and
+				 abs(self.desired_z-self.z)<0.1 ):
+			return True
+		else:
+			return False
+		
+	def update_mapxy(self):
+		if self.map_xy==None: return False
+		mx,my= self.map_xy
+		dx = self.desired_x
+		dy = self.desired_z
+		self.boardmap.setxy(mx,my,None)
+		replaced_obj=self.boardmap.getxy(dx,dy)
+		if replaced_obj!=None:
+			try:
+				replaced_obj.deleted_by(self)
+			except:
+				pass
+		
+		self.boardmap.setxy(dx,dy,self)
+		
+		return True
+		
+					
+
+	def character_move(self,dx,dy):
+		self.desired_x+=dx
+		self.desired_z+=dy
+		
+		self.character_updateangle()
+	
+	def character_updateangle(self):
+		dx=self.desired_x-self.x
+		dy=self.desired_z-self.z
+		self.desiredangle=worlds.xy_toangle(dx,dy)
+			
+	def dist_to_walk(self):
+		dx=self.desired_x-self.x
+		dy=self.desired_z-self.z
+		return math.sqrt(dx*dx+dy*dy)			
+		
+		
+class BoardPoint(BoardCharacter):
+	def deleted_by(self,origin):
+		self.deleted=True
+
+	def __init__(self,filename,x,y,board):
+		BoardCharacter.__init__(self,filename,x,y,board)
+		self.deleted=False
+		
+	def begin_round(self):
+		if self.deleted:
+			self.velocity.y+=0.01
+		else:
+			BoardCharacter.begin_round(self)		
+		
+		
+	
 worlds.init()
 
 black = soya.Material()
@@ -45,9 +234,9 @@ glass_board2.specular  = (0.2, 0.7, 1.0, 1.0)
 #glass_board2.separate_specular = 1 # brighter specular
 
 point_world = soya.World(None)
-worlds.Sphere(position=(0.02,.02,0.02), size=(.12,.08,.1), material=energy, quality=(8,8), insert_into=point_world)
-worlds.Sphere(position=(0.02,.02,0.02), size=(.08,.08,.08), material=energy, quality=(6,6), insert_into=point_world)
-worlds.Sphere(position=(0.02,.02,0.02), size=(.06,.06,.06), material=energy, quality=(3,3), insert_into=point_world)
+worlds.Sphere(position=(0.02,.0,0.02), size=(.12,.08,.1), material=energy, quality=(8,8), insert_into=point_world)
+worlds.Sphere(position=(0.02,.0,0.02), size=(.08,.08,.08), material=energy, quality=(6,6), insert_into=point_world)
+worlds.Sphere(position=(0.02,.0,0.02), size=(.06,.06,.06), material=energy, quality=(3,3), insert_into=point_world)
 mesh_point = point_world.to_model() 
 
 sharp_world = soya.World(None)
@@ -82,6 +271,8 @@ light.rotate_y(120)
 
 points={}
 
+boardmap=BoardMap(11,11)
+
 board=[]
 for x in range(11):
 	row=[]
@@ -93,41 +284,46 @@ for x in range(11):
 		board_cell.x=x
 		board_cell.z=y
 		row.append(board_cell)
-		point = worlds.Body(mesh_point)
-		point.x=x
-		point.z=y
-		point.y=.3
-		point.rotation[0]=random.uniform(-5, 5)
-		point.rotation[1]=random.uniform(-5, 5)
-		point.rotation[2]=random.uniform(-5, 5)
-		points[(x,y)]=point
-		
 
 	board.append(row)
 
 
-sharps={}
-while len(sharps)<11*11/4:
+num_sharps = 0
+while num_sharps<11*11/5:
 	x = random.randrange(11)
 	y = random.randrange(11)
-	if (x,y) not in sharps:
+	if boardmap.getxy(x,y) == None:
 		sharp = worlds.Body(mesh_sharp)
 		sharp.x = x
 		sharp.z = y
-		sharps[(x,y)]=sharp
-		points[(x,y)].visible=False
-		del points[(x,y)]
-	
-squisher = worlds.Character("echassien2@vert")
-squisher.scale(.5,.5,.5)
-squisher.x=2
-squisher.z=2
-	
-sorcerer = worlds.Character("balazar")
-sorcerer.scale(.6,.6,.6)
+		boardmap.setxy(x,y,sharp)
+		boardmap.setwall(x,y)
+		num_sharps += 1
+		
+num_enemies = 0
+while num_enemies < 2:
+	x = random.randrange(3)+8
+	y = random.randrange(5)+num_enemies*5
+	if boardmap.getxy(x,y) == None:
+		squisher = BoardCharacter("chef_morkul",x,y,boardmap)
+		squisher.scale(.5,.5,.5)
+		num_enemies += 1
 
-sorcerer.x=5
-sorcerer.z=6
+num_humans = 0 
+while num_humans < 1:
+	x = random.randrange(3)
+	y = random.randrange(5)+3
+	if boardmap.getxy(x,y) == None:
+		sorcerer = BoardCharacter("balazar",x,y,boardmap)
+		sorcerer.scale(.6,.6,.6)
+		num_humans += 1
+
+
+for x in range(11):
+	for y in range(11):
+		if boardmap.getxy(x,y) == None:
+			point = BoardPoint(mesh_point,x,y,boardmap)
+			point.y=0.1
 
 	
 worlds.camera.fov = 60
@@ -135,23 +331,12 @@ frame = 0
 
 def mainloop():
 	global sorcerer
-	walk=False
+	if sorcerer.is_inplace():
+		if sdlconst.K_UP in worlds.KEY:			sorcerer.character_move(0,-1)
+		if sdlconst.K_DOWN in worlds.KEY:		sorcerer.character_move(0,1)
+		if sdlconst.K_LEFT in worlds.KEY:   sorcerer.character_move(-1,0)
+		if sdlconst.K_RIGHT in worlds.KEY:	sorcerer.character_move(1,0)
 	
-	if sdlconst.K_UP in worlds.KEY:			walk=True; sorcerer.desiredangle=270
-	if sdlconst.K_DOWN in worlds.KEY:		walk=True; sorcerer.desiredangle=+90
-	if sdlconst.K_LEFT in worlds.KEY:   walk=True; sorcerer.desiredangle=180
-	if sdlconst.K_RIGHT in worlds.KEY:	walk=True; sorcerer.desiredangle=0
-	anglewrong=abs(sorcerer.angle-sorcerer.desiredangle)
-	if anglewrong>180: anglewrong-=360; anglewrong=abs(anglewrong)
-	
-	if walk and anglewrong<20: 
-		
-		sorcerer.character_setstate("walk")
-		if sorcerer.velocity.z>-0.1: sorcerer.velocity.z-=0.02
-	else:	
-		sorcerer.character_setstate("stop")
-		if sorcerer.velocity.z!=0: 
-			sorcerer.velocity.z/=1.2
 		
 		
 			
