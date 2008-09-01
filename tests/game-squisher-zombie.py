@@ -312,7 +312,7 @@ for x in range(11):
 
 
 num_sharps = 0
-while num_sharps<11*11/5:
+while num_sharps<11*11/3:
 	x = random.randrange(11)
 	y = random.randrange(11)
 	if boardmap.getxy(x,y) == None:
