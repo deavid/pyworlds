@@ -109,6 +109,7 @@ class BoardCharacter(worlds.Character):
 		self.boardmap = board
 		self.boardmap.setxy(x,y,self)
 		self.boardmap.setwall(x,y,char)
+		self.map_char=char
 		
 		
 	def begin_round(self):
@@ -175,7 +176,7 @@ class BoardCharacter(worlds.Character):
 					pass
 		
 		self.boardmap.setxy(dx,dy,self)
-		self.boardmap.setwall(dx,dy)
+		self.boardmap.setwall(dx,dy,self.map_char)
 		
 		return True
 		
@@ -312,7 +313,7 @@ for x in range(11):
 
 
 num_sharps = 0
-while num_sharps<11*11/3:
+while num_sharps<11*11/13:
 	x = random.randrange(11)
 	y = random.randrange(11)
 	if boardmap.getxy(x,y) == None:
@@ -324,10 +325,11 @@ while num_sharps<11*11/3:
 		num_sharps += 1
 		
 num_enemies = 0
+totalenemies = 2
 enemies=[]
-while num_enemies < 2:
+while num_enemies < totalenemies:
 	x = random.randrange(3)+8
-	y = random.randrange(5)+num_enemies*5
+	y = random.randrange(11/totalenemies)+num_enemies*11/totalenemies
 	if boardmap.getxy(x,y) == None:
 		squisher = BoardCharacter("chef_morkul",x,y,boardmap,"$")
 		squisher.scale(.5,.5,.5)
@@ -381,8 +383,8 @@ def human_move():
 def enemies_move():
 	global enemies,sorcerer
 	for enemy in enemies:
-		dx1 = sorcerer.x - enemy.x 
-		dy1 = sorcerer.z - enemy.z
+		dx1 = sorcerer.desired_x - enemy.x 
+		dy1 = sorcerer.desired_z - enemy.z
 		dx = 1 if dx1 > 0 else -1
 		dy = 1 if dy1 > 0 else -1
 		if abs(dx1) < 1: 
