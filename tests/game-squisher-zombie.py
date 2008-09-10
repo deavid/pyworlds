@@ -101,6 +101,7 @@ class BoardCharacter(worlds.Character):
 	""" This is a character that can move along in a board made of rectangles. """
 	def __init__(self,filename,x,y,board,char=None):
 		worlds.Character.__init__(self,filename)
+		self.points=0
 		self.x=x
 		self.z=y
 		self.desired_x=x
@@ -122,15 +123,17 @@ class BoardCharacter(worlds.Character):
 			
 		if self.distance>0.2:
 			
-			if self.distance<-self.velocity.z*3.0:
+			if self.distance<-self.velocity.z*4.0:
 				self.character_setstate("stop")
-				self.velocity.z = -self.distance / 3.0
+				self.velocity.z = -self.distance / 4.0 
 				self.character_updateangle()
 			elif self.distance>0.4 and self.velocity.z>-0.5: 
 				self.character_setstate("walk")
 				if anglewrong<20: anglewrong = 20.0
 				self.velocity.z =-2 / anglewrong
 				self.character_updateangle()
+			else:
+				self.velocity.z *=1.1
 		else:
 			if self.map_xy != None:
 				mx,my= self.map_xy
@@ -153,8 +156,8 @@ class BoardCharacter(worlds.Character):
 				or round(my,1) != round(self.desired_z,1)):
 				return False
 				
-		if ( abs(self.desired_x-self.x)<0.2 and
-				 abs(self.desired_z-self.z)<0.2 ):
+		if ( abs(self.desired_x-self.x)<0.6 and
+				 abs(self.desired_z-self.z)<0.6 ):
 			return True
 		else:
 			return False
@@ -203,6 +206,7 @@ class BoardCharacter(worlds.Character):
 		
 class BoardPoint(BoardCharacter):
 	def deleted_by(self,origin):
+		origin.points += 10
 		self.deleted=True
 
 	def __init__(self,filename,x,y,board):
@@ -286,8 +290,8 @@ glass_board2.specular  = (0.2, 0.7, 1.0, 1.0)
 #glass_board2.separate_specular = 1 # brighter specular
 
 point_world = soya.World(None)
-worlds.Sphere(position=(0.02,.0,0.02), size=(.12,.08,.1), material=energy, quality=(8,8), insert_into=point_world)
-worlds.Sphere(position=(0.02,.0,0.02), size=(.08,.08,.08), material=energy, quality=(6,6), insert_into=point_world)
+worlds.Sphere(position=(0.02,.0,0.02), size=(.12,.08,.1), material=energy, quality=(4,4), insert_into=point_world)
+worlds.Sphere(position=(0.02,.0,0.02), size=(.08,.08,.08), material=energy, quality=(4,4), insert_into=point_world)
 worlds.Sphere(position=(0.02,.0,0.02), size=(.06,.06,.06), material=energy, quality=(3,3), insert_into=point_world)
 mesh_point = point_world.to_model() 
 
@@ -389,7 +393,8 @@ worlds.camera.fov = 60
 frame = 0
 
 def mainloop():
-	global gameturn,sorcerer
+	global gameturn,sorcerer,lblPoints
+	lblPoints.text = u"%d Points" % sorcerer.points
 	
 	BodyInTurn=gameturn.inTurn()
 	if BodyInTurn!=None:
@@ -452,10 +457,23 @@ def renderloop(proportion):
 	worlds.camera.set_xyz(5+math.sin(frame/200.0)*2,12,16)
 	worlds.camera.look_at(sorcerer)
 	dist = worlds.camera.distance_to(sorcerer)
-	dfov = 500/dist
+	dfov = 600/dist
 	worlds.camera.fov = (worlds.camera.fov  * 10+ dfov) / 11.0
 	
 	
+worlds.init_gui()
+import soya.gui
+
+table = soya.gui.VTable(worlds.root, 2)
+table.row_pad = 10
+table.col_pad = 10
+table.border_pad = 1
+
+label=soya.gui.Label(table, u"Score:")
+label.color = (1.0,1.0,1.0,0.5)
+
+lblPoints=soya.gui.Label(table, u"0 Points")
+lblPoints.color = (1.0,1.0,1.0,0.8)
 
 
-worlds.begin_loop(mainloop, renderloop)
+worlds.begin_guiloop(mainloop, renderloop)

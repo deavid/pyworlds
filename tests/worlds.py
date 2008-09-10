@@ -1,6 +1,7 @@
 #!/usr/bin/python 
 
 import sys, os, os.path, soya
+import soya.widget as widget
 from soya import sdlconst
 import soya.widget
 import math
@@ -68,7 +69,64 @@ def begin_loop(callbackround=None, callbackadvance=None ):
 	if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
 	scene_body = SceneBody(scene,None)
 	soya.MainLoop(scene).main_loop()
+
+def init_gui():
+	global root,viewport
+	import soya.gui
 	
+	root = soya.gui.RootLayer(None)
+	viewport = soya.gui.CameraViewport(root, camera)
+	
+	
+
+def begin_guiloop(callbackround=None, callbackadvance=None ):
+	global root
+	global scene, callback_round, callback_advance, camera
+	callback_round = callbackround
+	callback_advance = callbackadvance 
+
+
+	soya.set_root_widget(root)
+	scene_body = SceneBody(scene,None)
+	soya.MainLoop(scene).main_loop()
+
+def begin_puddingloop(callbackround=None, callbackadvance=None ):
+	global scene, callback_round, callback_advance, camera
+	import soya.pudding as pudding
+	import soya.pudding.ext.fpslabel
+	import soya.pudding.ext.meter
+	pudding.init()
+	callback_round = callbackround
+	callback_advance = callbackadvance 
+	soya.set_root_widget(pudding.core.RootWidget())
+	soya.root_widget.add_child(camera)
+	pudding.ext.fpslabel.FPSLabel(soya.root_widget, position = pudding.TOP_RIGHT)
+
+	health_bar = pudding.ext.meter.MeterLabel(soya.root_widget, "score:", 
+				left = 10, top = 10, width = 1000,height = 20)
+	health_bar.anchors = pudding.ANCHOR_TOP_LEFT
+	health_bar.meter.max = 100
+	health_bar.meter.width = 1000
+	
+	health_bar.meter.calc_step()
+	
+	#health_bar.meter.user_change = False                                      
+	health_bar.meter.border_color = (1,1,1,0.8)
+	health_bar.label.color = health_bar.meter.border_color
+
+	logo = pudding.control.Logo(soya.root_widget, 'little-dunk.png')
+
+	button = pudding.control.Button(soya.root_widget, 'Quit', left = 10, width = 50, height = 40)
+	button.set_pos_bottom_right(bottom = 10)
+	button.anchors = pudding.ANCHOR_BOTTOM | pudding.ANCHOR_LEFT
+	button.on_click = sys.exit
+
+	# Creates and run an "main_loop" (=an object that manage time and regulate FPS)
+	# By default, FPS is locked at 40.
+
+	scene_body = SceneBody(scene,None)
+	pudding.main_loop.MainLoop(scene).main_loop()
+
 class SceneBody(soya.Body):
 	def advance_time(self, proportion):
 		global callback_advance
@@ -179,7 +237,7 @@ class Character(soya.Body):
 		anglediff = self.desiredangle - self.angle
 		if anglediff > 180:	anglediff-=360
 		if anglediff < -180:	anglediff+=360
-		anglemov = anglediff/3.0
+		anglemov = anglediff/2.0
 		
 		if abs(self.rotation[1])>abs(anglemov): 
 			self.rotation[1]=(self.rotation[1]-anglemov)/2.0
