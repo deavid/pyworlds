@@ -5,7 +5,7 @@ import soya
 
 worlds.init()
 
-head = worlds.Body("caterpillar_head")
+head = worlds.Body("sword")
 
 head.rotation[1]=5.0
 head.velocity.z=-0.1
@@ -15,7 +15,7 @@ new_springfactor = springfactor = 0
 pieces = {}
 previous = head
 for i in range(100):
-	pieces[i] = worlds.FollowBody("caterpillar",previous)
+	pieces[i] = worlds.FollowBody("sword",previous)
 	previous = pieces[i]
 
 worlds.camera.set_xyz(0,35,25)

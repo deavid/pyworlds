@@ -115,39 +115,29 @@ class BoardCharacter(worlds.Character):
 		
 	def begin_round(self):
 		worlds.Character.begin_round(self)		
-		anglewrong=abs(self.angle-self.desiredangle)
-		if anglewrong>180: 
-			anglewrong-=360; 
-			anglewrong=abs(anglewrong)
 		self.distance=self.dist_to_walk()
 			
 		if self.distance>0.2:
+			anglewrong=abs(self.angle-self.desiredangle)
+			if anglewrong>180: 
+				anglewrong-=360; 
+				anglewrong=abs(anglewrong)
 			
-			if self.distance<-self.velocity.z*4.0:
-				self.character_setstate("stop")
-				self.velocity.z = -self.distance / 4.0 
-				self.character_updateangle()
-			elif self.distance>0.4 and self.velocity.z>-0.5: 
+			if anglewrong<45: 
 				self.character_setstate("walk")
-				if anglewrong<20: anglewrong = 20.0
-				self.velocity.z =-2 / anglewrong
+				#if anglewrong<20: anglewrong = 20.0
+				self.velocity.z =-3
 				self.character_updateangle()
-			else:
-				self.velocity.z *=1.1
 		else:
-			if self.map_xy != None:
-				mx,my= self.map_xy
-				if (round(mx,1) != round(self.desired_x,1)
-					or round(my,1) != round(self.desired_z,1)):
-						self.update_mapxy()
-			else:
-				self.update_mapxy()
-			self.velocity.z /=1.2
-			self.x=(self.x*10+self.desired_x)/11.0
-			self.z=(self.z*10+self.desired_z)/11.0
+			if self.velocity.z!=0:
+				self.character_setstate("stop")
+				self.velocity.z =0
 			
 	def advance_time(self, proportion):
 		worlds.Character.advance_time(self, proportion)
+		if self.distance<0.2 :
+			self.x=(self.x*1+self.desired_x*proportion)/(1.0+proportion)
+			self.z=(self.z*1+self.desired_z*proportion)/(1.0+proportion)
 		
 	def is_inplace(self):
 		if self.map_xy != None:
@@ -156,8 +146,8 @@ class BoardCharacter(worlds.Character):
 				or round(my,1) != round(self.desired_z,1)):
 				return False
 				
-		if ( abs(self.desired_x-self.x)<0.6 and
-				 abs(self.desired_z-self.z)<0.6 ):
+		if ( abs(self.desired_x-self.x)<0.7 and
+				 abs(self.desired_z-self.z)<0.7 ):
 			return True
 		else:
 			return False
@@ -190,6 +180,7 @@ class BoardCharacter(worlds.Character):
 			self.desired_z+=dy
 			self.update_mapxy()
 			self.character_updateangle()
+			self.distance=self.dist_to_walk()
 			return True
 		return False
 	
@@ -213,11 +204,13 @@ class BoardPoint(BoardCharacter):
 		BoardCharacter.__init__(self,filename,x,y,board)
 		self.deleted=False
 		
-	def begin_round(self):
+	def advance_time(self, proportion):
+		worlds.Character.advance_time(self, proportion)
+		elapsed = worlds.mainloop.round_duration * proportion
+		if elapsed==0: elapsed=0.001
+		
 		if self.deleted:
-			self.velocity.y+=0.01
-		else:
-			BoardCharacter.begin_round(self)		
+			self.velocity.y+=10*elapsed
 		
 
 class GameTurn():
@@ -347,7 +340,7 @@ for x in range(11):
 
 
 num_sharps = 0
-while num_sharps<11*11/13:
+while num_sharps<11*11/8:
 	x = random.randrange(11)
 	y = random.randrange(11)
 	if boardmap.getxy(x,y) == None:
@@ -359,7 +352,7 @@ while num_sharps<11*11/13:
 		num_sharps += 1
 		
 num_enemies = 0
-totalenemies = 2
+totalenemies = 1
 enemies=[]
 while num_enemies < totalenemies:
 	x = random.randrange(3)+8
@@ -425,8 +418,8 @@ def human_move():
 
 def enemies_move(enemy):
 	global enemies,sorcerer
-	dx1 = sorcerer.desired_x - enemy.x + random.uniform(-10,10)
-	dy1 = sorcerer.desired_z - enemy.z + random.uniform(-10,10)
+	dx1 = sorcerer.desired_x - enemy.x + random.uniform(-4,4)
+	dy1 = sorcerer.desired_z - enemy.z + random.uniform(-4,4)
 	dx = 1 if dx1 > 0 else -1
 	dy = 1 if dy1 > 0 else -1
 	if abs(dx1) < 1: 
@@ -475,5 +468,18 @@ label.color = (1.0,1.0,1.0,0.5)
 lblPoints=soya.gui.Label(table, u"0 Points")
 lblPoints.color = (1.0,1.0,1.0,0.8)
 
+ 
+#import hotshot, hotshot.stats
+#prof = hotshot.Profile("worlds.prof")
+#prof.start()
 
 worlds.begin_guiloop(mainloop, renderloop)
+
+#prof.stop()
+#prof.close()
+#stats = hotshot.stats.load("worlds.prof")
+#stats.strip_dirs()
+#stats.sort_stats('time', 'calls')
+#stats.print_stats()
+
+

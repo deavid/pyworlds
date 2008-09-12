@@ -3,14 +3,14 @@ import worlds
 from worlds import sdlconst,soya
 worlds.init()
 
-head = worlds.Body("caterpillar_head")
+head = worlds.Body("sword")
 
 new_springfactor = springfactor = 16
 
 pieces = {}
 previous = head
 for i in range(100):
-	pieces[i] = worlds.FollowBody("caterpillar",previous)
+	pieces[i] = worlds.FollowBody("sword",previous)
 	pieces[i].set_springfactor(new_springfactor)
 	previous = pieces[i]
 
@@ -29,16 +29,16 @@ def mainloop():
 	global head, new_springfactor, springfactor, vel
 	
 	if sdlconst.K_UP in worlds.KEY: 		
-		head.velocity.z=-vel
+		head.velocity.z=-vel*2
 		#vel *= 1.001
-		vel += .001
+		vel += .05
 	else:
 		head.velocity.z/=1.1
-		vel = 0.2
+		vel = 2
 	if sdlconst.K_DOWN in worlds.KEY:	
 		head.velocity.z=0.2
-	if sdlconst.K_LEFT in worlds.KEY:	head.rotation[1]+=vel+0.1
-	if sdlconst.K_RIGHT in worlds.KEY:	head.rotation[1]-=vel+0.1
+	if sdlconst.K_LEFT in worlds.KEY:	head.rotation[1]+=vel+1
+	if sdlconst.K_RIGHT in worlds.KEY:	head.rotation[1]-=vel+1
 	
 	head.rotation[1]/=1.05
 

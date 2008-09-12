@@ -18,6 +18,15 @@ callback_advance = None
 scene_body = None
 
 enable_fps = False
+try:
+		import psyco
+		psyco.full()
+		print "Psyco found and started -- Python code accelerated."
+except ImportError:
+		print "I can't find PsyCo for Python acceleration."
+		pass
+
+
 
 def is_pyWorlds_installed():
 	print "pyWorlds seem to be installed and working."
@@ -25,6 +34,7 @@ def is_pyWorlds_installed():
 	
 	
 def init(create_basic=True):
+	# Import Psyco if available
 	global scene
 	soya.init()
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
@@ -33,10 +43,12 @@ def init(create_basic=True):
 		init_basicscene()
 
 def init_basicscene():
-	global scene, light, camera
+	global scene, light, camera, mainloop
 	light = soya.Light(scene)
 	light.directional = 1
 	light.rotate_x(-90)
+	mainloop=soya.MainLoop(scene)
+	mainloop.round_duration=.06
 	
 
 	camera = soya.Camera(scene)
@@ -61,14 +73,14 @@ def xy_toangle(x1,y1):
 
 
 def begin_loop(callbackround=None, callbackadvance=None ):
-	global scene, callback_round, callback_advance, camera
+	global scene, callback_round, callback_advance, camera,mainloop
 	callback_round = callbackround
 	callback_advance = callbackadvance 
 	soya.set_root_widget(soya.widget.Group())
 	soya.root_widget.add(camera)
 	if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
 	scene_body = SceneBody(scene,None)
-	soya.MainLoop(scene).main_loop()
+	mainloop.main_loop()
 
 def init_gui():
 	global root,viewport
@@ -80,7 +92,7 @@ def init_gui():
 	
 
 def begin_guiloop(callbackround=None, callbackadvance=None ):
-	global root
+	global root, mainloop
 	global scene, callback_round, callback_advance, camera
 	callback_round = callbackround
 	callback_advance = callbackadvance 
@@ -88,7 +100,9 @@ def begin_guiloop(callbackround=None, callbackadvance=None ):
 
 	soya.set_root_widget(root)
 	scene_body = SceneBody(scene,None)
-	soya.MainLoop(scene).main_loop()
+	mainloop=soya.MainLoop(scene)
+	mainloop.round_duration=.04
+	mainloop.main_loop()
 
 def begin_puddingloop(callbackround=None, callbackadvance=None ):
 	global scene, callback_round, callback_advance, camera
@@ -170,11 +184,15 @@ class Body(soya.Body):
 		self.rotation = [0,0,0]
 	
 	def advance_time(self, proportion):
+		global mainloop
 		soya.Body.advance_time(self, proportion)
-		self.add_mul_vector(proportion, self.velocity)
-		self.rotate_x(proportion * self.rotation[0])
-		self.rotate_y(proportion * self.rotation[1])
-		self.rotate_z(proportion * self.rotation[2])
+		elapsed = mainloop.round_duration * proportion
+		if elapsed==0: elapsed=0.001
+		
+		self.add_mul_vector(elapsed, self.velocity)
+		self.rotate_x(elapsed * self.rotation[0])
+		self.rotate_y(elapsed * self.rotation[1])
+		self.rotate_z(elapsed * self.rotation[2])
 
 	#def begin_round(self):
 	#	soya.Body.begin_round(self)		
@@ -207,15 +225,34 @@ class Character(soya.Body):
 		self.velocity = soya.Vector(self,0,0,0)
 		self.rotation = [0,0,0]
 		self.desiredangle = 0
+		self.look_at_speed = 10
 		
 	def advance_time(self, proportion):
 		soya.Body.advance_time(self, proportion)
-		self.add_mul_vector(proportion, self.velocity)
-		self.rotate_x(proportion * self.rotation[0])
-		self.rotate_y(proportion * self.rotation[1])
-		self.rotate_z(proportion * self.rotation[2])
-
+		elapsed = mainloop.round_duration * proportion
+		if elapsed==0: elapsed=0.001
+		self.angle = self.get_absoluteangleXZ()
+		if self.desiredangle >= 360: self.desiredangle-=360
+		if self.desiredangle < 0: self.desiredangle+=360
 		
+		anglediff = self.desiredangle - self.angle
+		if anglediff > 180:	anglediff-=360
+		if anglediff < -180:	anglediff+=360
+		factor = self.look_at_speed
+		if factor > 1/elapsed : factor = 1/elapsed 
+		anglemov = anglediff * factor
+		
+		if abs(self.rotation[1])>abs(anglemov): 
+			self.rotation[1]=(self.rotation[1]-anglemov)/2.0
+		else:
+			self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
+		if abs(anglediff)<1:
+			self.rotation[1]=-anglediff
+		
+		self.add_mul_vector(elapsed , self.velocity)
+		self.rotate_x(elapsed * self.rotation[0])
+		self.rotate_y(elapsed * self.rotation[1])
+		self.rotate_z(elapsed * self.rotation[2])
 		
 	def get_absoluteangleXZ(self,vector=None):
 		if vector == None:
@@ -224,27 +261,6 @@ class Character(soya.Body):
 		q=vector % scene # I mean an upper container.
 		
 		return xy_toangle(q.x,q.z)
-		
-		
-		
-
-	def begin_round(self):
-		soya.Body.begin_round(self)		
-		self.angle = self.get_absoluteangleXZ()
-		if self.desiredangle >= 360: self.desiredangle-=360
-		if self.desiredangle < 0: self.desiredangle+=360
-		
-		anglediff = self.desiredangle - self.angle
-		if anglediff > 180:	anglediff-=360
-		if anglediff < -180:	anglediff+=360
-		anglemov = anglediff/2.0
-		
-		if abs(self.rotation[1])>abs(anglemov): 
-			self.rotation[1]=(self.rotation[1]-anglemov)/2.0
-		else:
-			self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
-		if abs(anglediff)<1:
-			self.rotation[1]=-anglediff
 
 	def character_setstate(self,newstate):
 		if newstate==self.state: return False
@@ -271,16 +287,21 @@ class Character(soya.Body):
 		self.state=newstate
 		return True
 	
+
+
+
+
+
 class FollowBody(Body):
 	def __init__(self,filename,target):
 		Body.__init__(self,filename)
 		self.x=target.x
 		self.y=target.y
 		self.z=target.z
-		self.advance_time(-5)
 		self.target = target
-		self.target_distance = [0.1,.4,3]
+		self.target_distance = [0.5,1.0,2]
 		self.set_springfactor(16)
+		self.target_velocity = 1
 
 		for i in range(25):
 			self.begin_round()
@@ -288,7 +309,6 @@ class FollowBody(Body):
 	
 	def set_springfactor(self,factor):
 		self.target_springfactor = factor / 100.0
-		self.target_velocity = 1 / (self.target_springfactor+1)
 		
 	def begin_round(self):
 		Body.begin_round(self)		
@@ -316,16 +336,31 @@ class FollowBody(Body):
 		if factor2 < 1: factor2 = 1
 		if self.velocity.z>1:
 			factor/=self.velocity.z
-		vel = self.target_velocity 
+
+		vel = self.target_velocity
 		# self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + Q * vel ) / (self.target_springfactor * factor + 1 )
 		self.velocity.z =  (self.velocity.z * self.target_springfactor * factor + (_med - distance) * vel ) / (self.target_springfactor * factor + 1 )
 		#self.velocity.z *=  factor2
-		
 		if distance<_max:
 			look_at_elastic(self,self.target, sqrt_from=360, factor=(1-factor)+.3)
 		else:
 			self.look_at(self.target)
 			
+	def advance_time(self, proportion):
+		Body.advance_time(self, proportion)
+		distance = self.distance_to(self.target)
+		_min = self.target_distance[0]
+		_med = self.target_distance[1]
+		_max = self.target_distance[2]
+		f3 = (distance - _med) / (_max - _med)
+		f1 = self.target_springfactor * 100 + 1
+		if f3>1: 
+			f3=1
+			
+		f3*=proportion
+		self.x = (self.x * f1 + self.target.x * f3) / (f1+f3)
+		self.y = (self.y * f1 + self.target.y * f3) / (f1+f3)
+		self.z = (self.z * f1 + self.target.z * f3) / (f1+f3)
 
 					
 
