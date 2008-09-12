@@ -1,6 +1,8 @@
 #!/usr/bin/python 
-	
-import worlds
+import sys,os
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..', 'src')))
+
+import pyworlds.worlds as worlds
 import soya
 
 worlds.init()

@@ -1,6 +1,9 @@
 #!/usr/bin/python 
-import worlds
-from worlds import sdlconst,soya
+import sys,os
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..', 'src')))
+
+import pyworlds.worlds as worlds
+from pyworlds.worlds import sdlconst,soya
 worlds.init()
 
 head = worlds.Body("sword")

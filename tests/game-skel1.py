@@ -1,6 +1,9 @@
 #!/usr/bin/python 
-import worlds
-from worlds import sdlconst,soya
+import sys,os
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..', 'src')))
+
+import pyworlds.worlds as worlds
+from pyworlds.worlds import sdlconst,soya
 import soya.widget as widget
 
 
@@ -111,13 +114,16 @@ worlds.camera.back = 500
 worlds.enable_fps = True
 
 def mainloop():
-	if sdlconst.K_UP in worlds.KEY:			worlds.camera.z -= 1
-	if sdlconst.K_DOWN in worlds.KEY:		worlds.camera.z += 1
-	if sdlconst.K_LEFT in worlds.KEY:		worlds.camera.x -= 1
-	if sdlconst.K_RIGHT in worlds.KEY:	worlds.camera.x += 1
-	if sdlconst.K_SPACE in worlds.KEY:	worlds.camera.y += .5
-	if sdlconst.K_LCTRL in worlds.KEY:	worlds.camera.y -= .5
-	print worlds.camera.x,worlds.camera.y,worlds.camera.z
+	pass
+#	print worlds.camera.x,worlds.camera.y,worlds.camera.z
 	
 
-worlds.begin_loop(mainloop)
+def renderloop(proportion):
+	if sdlconst.K_UP in worlds.KEY:			worlds.camera.z -= 1 * proportion
+	if sdlconst.K_DOWN in worlds.KEY:		worlds.camera.z += 1 * proportion
+	if sdlconst.K_LEFT in worlds.KEY:		worlds.camera.x -= 1 * proportion
+	if sdlconst.K_RIGHT in worlds.KEY:	worlds.camera.x += 1 * proportion
+	if sdlconst.K_SPACE in worlds.KEY:	worlds.camera.y += .5 * proportion
+	if sdlconst.K_LCTRL in worlds.KEY:	worlds.camera.y -= .5 * proportion
+	
+worlds.begin_loop(mainloop,renderloop)
