@@ -8,6 +8,7 @@ worlds.init()
 
 sword = worlds.Body("sword")
 
+worlds.camera.set_xyz(0,0,5)
 sword.rotate_y(60.0)
 
 worlds.begin_loop()

@@ -5,8 +5,10 @@ import soya.widget
 import math
 
 from utils import *
+import basics.scene
 
 global scene,camera,light
+
 scene = None
 camera = None
 light = None
@@ -45,8 +47,10 @@ def init(create_basic=True):
 	global scene,mainloop
 	soya.init()
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
-	scene = soya.World()
+	scene = basics.scene.scene
 	mainloop=soya.MainLoop(scene)
+	scene.mainloop=mainloop
+	scene.round_duration=.04
 	mainloop.round_duration=.04
 	if create_basic:
 		init_basicscene()

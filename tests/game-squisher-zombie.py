@@ -215,8 +215,7 @@ class BoardPoint(BoardCharacter):
 		if elapsed==0: elapsed=0.001
 		
 		if self.deleted:
-			self.velocity.y+=10*elapsed
-		
+			self.velocity.y+=0.5*elapsed+self.velocity.y/10.0
 
 class GameTurn():
 	def __init__(self):
@@ -391,13 +390,15 @@ worlds.camera.fov = 60
 frame = 0
 
 def mainloop():
-	global gameturn,sorcerer,lblPoints
+	global gameturn,sorcerer,lblPoints,sorcerer
 	lblPoints.text = u"%d Points" % sorcerer.points
 	
 	BodyInTurn=gameturn.inTurn()
 	if BodyInTurn!=None:
 		if BodyInTurn==sorcerer:
 			if human_move():
+				if sorcerer.points>=5:
+					sorcerer.points-=5
 				gameturn.beginMove()
 		else:
 			enemies_move(BodyInTurn)
