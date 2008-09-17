@@ -137,14 +137,18 @@ class PhysicsBody(Body):
 		self.initialize_vars()
 		
 	def initialize_vars(self):
-		self.speed  = soya.Vector(None)
+		self.speed  = soya.Vector(self,0,0,0)
 		self.rotation = [0,0,0]
 		
 	def elapsed_time(self,seconds):
 		self.add_mul_vector(seconds, self.speed)
-		self.rotate_x(seconds * self.rotation[0])
-		self.rotate_y(seconds * self.rotation[1])
-		self.rotate_z(seconds * self.rotation[2])
+		#self.rotate_x(seconds * self.rotation[0])
+		#self.rotate_y(seconds * self.rotation[1])
+		#self.rotate_z(seconds * self.rotation[2])
+
+		self.turn_x(seconds * self.rotation[0])
+		self.turn_y(seconds * self.rotation[1])
+		self.turn_z(seconds * self.rotation[2])
 		
 		
 		

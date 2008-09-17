@@ -10,8 +10,8 @@ w.init()
 sword = PhysicsBody(mesh_file="sword")
 
 sword.rotation[1]=90.0
-#sword.rotation[2]=2.0
 sword.rotation[0]=17.0
+sword.rotation[2]=3.0
 w.camera.set_xyz(0,0,5)
 
 w.begin_loop()
