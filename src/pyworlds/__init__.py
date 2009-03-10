@@ -1,2 +1,2 @@
-from worlds import *
+import worlds 
 

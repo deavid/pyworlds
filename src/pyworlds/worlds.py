@@ -5,8 +5,10 @@ import soya.widget
 import math
 
 from utils import *
+import basics.scene
 
 global scene,camera,light
+
 scene = None
 camera = None
 light = None
@@ -45,8 +47,10 @@ def init(create_basic=True):
 	global scene,mainloop
 	soya.init()
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
-	scene = soya.World()
+	scene = basics.scene.scene
 	mainloop=soya.MainLoop(scene)
+	scene.mainloop=mainloop
+	scene.round_duration=.04
 	mainloop.round_duration=.04
 	if create_basic:
 		init_basicscene()
@@ -153,95 +157,95 @@ class Body(soya.Body):
 
 
 
-class Character(soya.Body):
-	def __init__(self,filename):
-		global scene
-		if type(filename) == type(''):
-			if filename in animated_meshes:
-				mesh = animated_meshes[filename]
-			else:
-				mesh = soya.AnimatedModel.get(filename)
-				animated_meshes[filename] = mesh
-		else:
-			# if it's not a text it is a animated-mesh.
-			mesh = filename
-		self.mesh = mesh
-		# print "Available meshes    :", sorcerer_model.meshes    .keys()
-		# print "Available animations:", mesh.animations.keys()
-		# -> Available animations: ['marche', 'tourneD', 'chute', 'tourneG', 'attente', 'recule']
+#class Character(soya.Body):
+	#def __init__(self,filename):
+		#global scene
+		#if type(filename) == type(''):
+			#if filename in animated_meshes:
+				#mesh = animated_meshes[filename]
+			#else:
+				#mesh = soya.AnimatedModel.get(filename)
+				#animated_meshes[filename] = mesh
+		#else:
+			## if it's not a text it is a animated-mesh.
+			#mesh = filename
+		#self.mesh = mesh
+		## print "Available meshes    :", sorcerer_model.meshes    .keys()
+		## print "Available animations:", mesh.animations.keys()
+		## -> Available animations: ['marche', 'tourneD', 'chute', 'tourneG', 'attente', 'recule']
 
-		soya.Body.__init__(self,scene,mesh)
-		self.states = {
-						"stop" : ["garde","attente"], 
-						"walk" : ["marche"],
-						}
-		self.state = None
-		self.statecycle = None
-		self.character_setstate("stop")
-		self.velocity = soya.Vector(self,0,0,0)
-		self.rotation = [0,0,0]
-		self.desiredangle = 0
-		self.look_at_speed = 10
+		#soya.Body.__init__(self,scene,mesh)
+		#self.states = {
+						#"stop" : ["garde","attente"], 
+						#"walk" : ["marche"],
+						#}
+		#self.state = None
+		#self.statecycle = None
+		#self.character_setstate("stop")
+		#self.velocity = soya.Vector(self,0,0,0)
+		#self.rotation = [0,0,0]
+		#self.desiredangle = 0
+		#self.look_at_speed = 10
 		
-	def advance_time(self, proportion):
-		soya.Body.advance_time(self, proportion)
-		elapsed = mainloop.round_duration * proportion
-		if elapsed==0: elapsed=0.001
-		self.angle = self.get_absoluteangleXZ()
-		if self.desiredangle >= 360: self.desiredangle-=360
-		if self.desiredangle < 0: self.desiredangle+=360
+	#def advance_time(self, proportion):
+		#soya.Body.advance_time(self, proportion)
+		#elapsed = mainloop.round_duration * proportion
+		#if elapsed==0: elapsed=0.001
+		#self.angle = self.get_absoluteangleXZ()
+		#if self.desiredangle >= 360: self.desiredangle-=360
+		#if self.desiredangle < 0: self.desiredangle+=360
 		
-		anglediff = self.desiredangle - self.angle
-		if anglediff > 180:	anglediff-=360
-		if anglediff < -180:	anglediff+=360
-		factor = self.look_at_speed
-		if factor > 1/elapsed : factor = 1/elapsed 
-		anglemov = anglediff * factor
+		#anglediff = self.desiredangle - self.angle
+		#if anglediff > 180:	anglediff-=360
+		#if anglediff < -180:	anglediff+=360
+		#factor = self.look_at_speed
+		#if factor > 1/elapsed : factor = 1/elapsed 
+		#anglemov = anglediff * factor
 		
-		if abs(self.rotation[1])>abs(anglemov): 
-			self.rotation[1]=(self.rotation[1]-anglemov)/2.0
-		else:
-			self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
-		if abs(anglediff)<1:
-			self.rotation[1]=-anglediff
+		#if abs(self.rotation[1])>abs(anglemov): 
+			#self.rotation[1]=(self.rotation[1]-anglemov)/2.0
+		#else:
+			#self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
+		#if abs(anglediff)<1:
+			#self.rotation[1]=-anglediff
 		
-		self.add_mul_vector(elapsed , self.velocity)
-		self.rotate_x(elapsed * self.rotation[0])
-		self.rotate_y(elapsed * self.rotation[1])
-		self.rotate_z(elapsed * self.rotation[2])
+		#self.add_mul_vector(elapsed , self.velocity)
+		#self.rotate_x(elapsed * self.rotation[0])
+		#self.rotate_y(elapsed * self.rotation[1])
+		#self.rotate_z(elapsed * self.rotation[2])
 		
-	def get_absoluteangleXZ(self,vector=None):
-		if vector == None:
-			vector = soya.Vector(self,0,0,-1)
+	#def get_absoluteangleXZ(self,vector=None):
+		#if vector == None:
+			#vector = soya.Vector(self,0,0,-1)
 
-		q=vector % scene # I mean an upper container.
+		#q=vector % scene # I mean an upper container.
 		
-		return xy_toangle(q.x,q.z)
+		#return xy_toangle(q.x,q.z)
 
-	def character_setstate(self,newstate):
-		if newstate==self.state: return False
-		if not hasattr(self.mesh,"animations"): return False
-		if len(self.states[newstate])<1: raise
-		newstatecycle=None
-		try:
-			for statecycle in self.states[newstate]:
-				if statecycle in self.mesh.animations:
-					newstatecycle=statecycle
-					break;
-		except:
-			raise
-		if not newstatecycle: 
-			print "Not found any animation for %s: " % newstate,  self.states[newstate]
-			print "Available animations:", self.mesh.animations.keys()
-			raise
+	#def character_setstate(self,newstate):
+		#if newstate==self.state: return False
+		#if not hasattr(self.mesh,"animations"): return False
+		#if len(self.states[newstate])<1: raise
+		#newstatecycle=None
+		#try:
+			#for statecycle in self.states[newstate]:
+				#if statecycle in self.mesh.animations:
+					#newstatecycle=statecycle
+					#break;
+		#except:
+			#raise
+		#if not newstatecycle: 
+			#print "Not found any animation for %s: " % newstate,  self.states[newstate]
+			#print "Available animations:", self.mesh.animations.keys()
+			#raise
 
-		if self.statecycle:
-			self.animate_clear_cycle(self.statecycle)			
-			self.statecycle = None
-		self.animate_blend_cycle(newstatecycle)
-		self.statecycle = newstatecycle
-		self.state=newstate
-		return True
+		#if self.statecycle:
+			#self.animate_clear_cycle(self.statecycle)			
+			#self.statecycle = None
+		#self.animate_blend_cycle(newstatecycle)
+		#self.statecycle = newstatecycle
+		#self.state=newstate
+		#return True
 	
 
 

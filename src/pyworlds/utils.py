@@ -161,7 +161,7 @@ def look_at_elastic(self,p2,vector=None, factor=0.5, sqrt_from=15):
 	if vector == None:
 		vector = soya.Vector(self,0,0,-1000)
 
-	q=vector % scene # I mean an upper container.
+	q=vector % self.parent # I mean an upper container.
 	
 	v1 = (self >> q)
 	v2 = (self >> p2)
