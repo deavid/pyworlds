@@ -14,6 +14,7 @@ sword.rotation[1]=90.0
 sword.rotation[0]=17.0
 sword.rotation[2]=3.0
 w.camera.set_xyz(0,0,5)
+sword.set_timefactor(1)
 
 def mainloop():
 	global sword
@@ -23,9 +24,15 @@ def mainloop():
 	if K_RIGHT in w.KEY: sword.rotation[1]-=10
 	if K_RSHIFT in w.KEY: sword.rotation[2]+=10
 	if K_RCTRL in w.KEY: sword.rotation[2]-=10
-	
-	sword.rotation[0]/=1.05
-	sword.rotation[1]/=1.05
-	sword.rotation[2]/=1.05
+
+@sword.addloopcall
+def swordloop(t):
+    if t==0: return 0;	
+    sword.rotation[0]/=1+0.50*t
+    sword.rotation[1]/=1+0.50*t
+    sword.rotation[2]/=1+0.50*t
+    return t
+
+
 
 w.begin_loop(callbackround=mainloop)
