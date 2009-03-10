@@ -163,7 +163,7 @@ class CharacterBody(PhysicsBody):
 		self.statecycle = None
 		self.character_setstate("stop")
 		self.desiredangle = 0
-		self.look_at_speed = 10
+		self.look_at_speed = 500
 		self.angle = 0 
 		
 	def elapsed_time(self, seconds):
@@ -176,8 +176,12 @@ class CharacterBody(PhysicsBody):
 		anglediff = self.desiredangle - self.angle
 		if anglediff > 180:	anglediff-=360
 		if anglediff < -180:	anglediff+=360
-		factor = self.look_at_speed
-		if factor > 1/elapsed : factor = 1/elapsed 
+		factor = self.look_at_speed * seconds
+		# -> we can't handle computing limit in this way:
+		#if factor > 1/elapsed : factor = 1/elapsed 
+		if factor > 1/seconds: 
+			factor = 1/seconds
+		
 		anglemov = anglediff * factor
 		
 		if abs(self.rotation[1])>abs(anglemov): 
@@ -186,6 +190,8 @@ class CharacterBody(PhysicsBody):
 			self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
 		if abs(anglediff)<1:
 			self.rotation[1]=-anglediff
+			
+		return seconds
 		
 	def character_setstate(self,newstate):
 		if newstate==self.state: return False

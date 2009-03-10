@@ -36,11 +36,11 @@ def mainloop():
 	if soya.sdlconst.K_RIGHT in w.KEY:	head.rotation[1]-=200
 	head.rotation[1]/=1.5
 
-	if soya.sdlconst.K_1 in w.KEY:	new_springfactor=1
-	if soya.sdlconst.K_2 in w.KEY:	new_springfactor=2
-	if soya.sdlconst.K_3 in w.KEY:	new_springfactor=4
-	if soya.sdlconst.K_4 in w.KEY:	new_springfactor=8
-	if soya.sdlconst.K_5 in w.KEY:	new_springfactor=16
+	if soya.sdlconst.K_1 in w.KEY:	new_springfactor=0.1
+	if soya.sdlconst.K_2 in w.KEY:	new_springfactor=0.2
+	if soya.sdlconst.K_3 in w.KEY:	new_springfactor=0.4
+	if soya.sdlconst.K_4 in w.KEY:	new_springfactor=0.8
+	if soya.sdlconst.K_5 in w.KEY:	new_springfactor=1.6
 	if soya.sdlconst.K_0 in w.KEY:	new_springfactor=0
 
 	if new_springfactor != springfactor:
@@ -51,8 +51,9 @@ def mainloop():
 		new_springfactor = springfactor
 		
 def renderloop(proportion):
+	global head
+	w.camera.look_at(head) 
 	pass
-	# worlds.camera.look_at(head) # This looks buggy
 
 
 

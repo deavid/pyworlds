@@ -10,7 +10,7 @@ from pyworlds.worlds import sdlconst,soya
 import soya.widget as widget
 import soya.cube
 import soya.sdlconst as sdlconst
-
+from pyworlds.basics.body import *
 
 class BoardMap():
 	def __init__(self,rows,cols):
@@ -102,10 +102,10 @@ class BoardMap():
 
 
 
-class BoardCharacter(worlds.Character):
+class BoardCharacter(CharacterBody):
 	""" This is a character that can move along in a board made of rectangles. """
-	def __init__(self,filename,x,y,board,char=None):
-		worlds.Character.__init__(self,filename)
+	def __init__(self,x,y,board,char=None,**kwargs):
+		CharacterBody.__init__(self,**kwargs)
 		self.points=0
 		self.x=x
 		self.z=y
@@ -119,7 +119,7 @@ class BoardCharacter(worlds.Character):
 		
 		
 	def begin_round(self):
-		worlds.Character.begin_round(self)		
+		CharacterBody.begin_round(self)		
 		self.distance=self.dist_to_walk()
 			
 		if self.distance>0.2:
@@ -128,18 +128,18 @@ class BoardCharacter(worlds.Character):
 				anglewrong-=360; 
 				anglewrong=abs(anglewrong)
 			
-			if anglewrong<45: 
+			if anglewrong<60: 
 				self.character_setstate("walk")
 				#if anglewrong<20: anglewrong = 20.0
-				self.velocity.z =-3
+				self.speed.z =-3+anglewrong/20
 				self.character_updateangle()
 		else:
-			if self.velocity.z!=0:
+			if self.speed.z!=0:
 				self.character_setstate("stop")
-				self.velocity.z =0
+				self.speed.z =0
 			
 	def advance_time(self, proportion):
-		worlds.Character.advance_time(self, proportion)
+		CharacterBody.advance_time(self, proportion)
 		if self.distance<0.2 :
 			self.x=(self.x*1+self.desired_x*proportion)/(1.0+proportion)
 			self.z=(self.z*1+self.desired_z*proportion)/(1.0+proportion)
@@ -205,17 +205,17 @@ class BoardPoint(BoardCharacter):
 		origin.points += 10
 		self.deleted=True
 
-	def __init__(self,filename,x,y,board):
-		BoardCharacter.__init__(self,filename,x,y,board)
+	def __init__(self,x,y,board,**kwargs):
+		BoardCharacter.__init__(self,x,y,board,**kwargs)
 		self.deleted=False
 		
 	def advance_time(self, proportion):
-		worlds.Character.advance_time(self, proportion)
+		CharacterBody.advance_time(self, proportion)
 		elapsed = worlds.mainloop.round_duration * proportion
 		if elapsed==0: elapsed=0.001
 		
 		if self.deleted:
-			self.velocity.y+=0.5*elapsed+self.velocity.y/10.0
+			self.speed.y+=0.5*elapsed+self.speed.y/10.0
 
 class GameTurn():
 	def __init__(self):
@@ -309,18 +309,19 @@ worlds.Box(0.125,0.125,0.95,None,glass_sharp, sharp_world,1, (-0.17,1.3-0.37-0.5
 worlds.Box(0.125,0.125,0.95,None,glass_sharp, sharp_world,1, ( 0.17,1.3-0.37-0.5,0))
 
 #worlds.Box(1.0,1.4,1.0,None,glass_board, sharp_world,1, (0,0.7,0))
-worlds.Box(1,0.1,1,None,black, sharp_world,1, (0,0.1,0))
+worlds.Box(1,0.2,1,None,black, sharp_world,1, (0,0.1,0))
 
 mesh_sharp = sharp_world.to_model()
 
-mesh_board_cell = worlds.Box(.98,0.1,.98,None,glass_board).to_model()
-mesh_board_cell2 = worlds.Box(.98,0.1,.98,None,glass_board2).to_model()
+mesh_board_cell = worlds.Box(.97,0.1,.97,None,glass_board).to_model()
+mesh_board_cell2 = worlds.Box(.97,0.1,.97,None,glass_board2).to_model()
 
 #mesh_board_cell = soya.cube.Cube(None).to_model()
 light = soya.Light(worlds.scene)
 light.directional = 1
 light.rotate_x(120)
 light.rotate_y(120)
+
 
 points={}
 
@@ -333,14 +334,15 @@ for x in range(11):
 	row=[]
 	for y in range(11):
 		if (x+y)%2==0:
-			board_cell = worlds.Body(mesh_board_cell)
+			board_cell = PhysicsBody(mesh=mesh_board_cell)
 		else:
-			board_cell = worlds.Body(mesh_board_cell2)
+			board_cell = PhysicsBody(mesh=mesh_board_cell2)
 		board_cell.x=x
 		board_cell.z=y
 		row.append(board_cell)
 
 	board.append(row)
+
 
 
 num_sharps = 0
@@ -362,7 +364,7 @@ while num_enemies < totalenemies:
 	x = random.randrange(3)+8
 	y = random.randrange(11/totalenemies)+num_enemies*11/totalenemies
 	if boardmap.getxy(x,y) == None:
-		squisher = BoardCharacter("chef_morkul",x,y,boardmap,"$")
+		squisher = BoardCharacter(x,y,boardmap,"$",animatedmesh_file="chef_morkul")
 		squisher.scale(.5,.5,.5)
 		gameturn.addBody(squisher)
 		enemies.append(squisher)
@@ -373,7 +375,7 @@ while num_humans < 1:
 	x = random.randrange(3)
 	y = random.randrange(5)+3
 	if boardmap.getxy(x,y) == None:
-		sorcerer = BoardCharacter("balazar",x,y,boardmap,"H")
+		sorcerer = BoardCharacter(x,y,boardmap,"H",animatedmesh_file="balazar")
 		sorcerer.scale(.6,.6,.6)
 		gameturn.addBody(sorcerer)
 		num_humans += 1
@@ -382,7 +384,7 @@ while num_humans < 1:
 for x in range(11):
 	for y in range(11):
 		if boardmap.getxy(x,y) == None:
-			point = BoardPoint(mesh_point,x,y,boardmap)
+			point = BoardPoint(x,y,boardmap,mesh=mesh_point)
 			point.y=0.1
 
 	
