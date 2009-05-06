@@ -1,3 +1,6 @@
+import sys, os, os.path
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..', '..')))
 import soya
 import pyworlds.worlds
 from pyworlds.utils import *
@@ -25,23 +28,95 @@ SIM_TYPE= {
         
     }
 
+class BDriver:
+    def __init__(self,body):
+        # Time relative to function loop:
+        self.elapsed_real_time = 0
+
+        # computational limits    
+        self.min_elapse_time = 0
+        self.med_elapse_time = 1 / 20.0
+        self.max_elapse_time = 1 / 10.0
+
+        self.body = body
+        body.add_driver(self)
+        self.userloops = []
+        
+        battr = self.bodyattrname()
+        if battr:
+            setattr(body,battr,self)
+
+
+    def bodyattrname(self): return None;
+            
+    def userloop(self, call):
+        self.userloops.append(call)
+        
+    def elapse_to_time(self,new_time):
+        seconds = new_time - self.elapsed_real_time
+        total_elapsed=0
+        while seconds > self.min_elapse_time:
+            if seconds > self.max_elapse_time:
+                seconds = self.med_elapse_time
+
+            seconds = self.elapsed_time(seconds)
+
+            for elapsedcall in self.userloops:
+                elapsedcall(self,seconds)
+
+            self.elapsed_real_time += seconds
+            total_elapsed += seconds
+            seconds = new_time - self.elapsed_real_time
+        return total_elapsed    
+        
+    def elapsed_time(self,seconds):
+        return seconds
+        
+
+class PhysicsBDriver(BDriver):
+    def bodyattrname(self): return 'physicsBDriver';
+
+    def elapsed_time(self,seconds):
+        body = self.body
+        
+        body.add_mul_vector(seconds, body.speed)
+        body.turn_x(seconds * body.rotation[0])
+        body.turn_y(seconds * body.rotation[1])
+        body.turn_z(seconds * body.rotation[2])
+        return seconds
+        
+    
+
 class Body(soya.Body):
     def __init__(self, parent = None, model = None):
         soya.Body.__init__(self,parent,model)
         self.set_timefactor(1)
+        
+        # Time when was displayed:
         self.elapsed_render_time = 0
+        
+        # Time relative to object simulation:
         self.elapsed_round_time = 0
+        
+        # Time relative to function loop:
         self.elapsed_real_time = 0
+        
         self.set_timesimulation(SIM_TYPE['live'])
         self.time_factor = 1
-        self.min_elapse_time = 1 / 80.0
-        self.max_elapse_time = 1 / 20.0
         self.state1 = soya.CoordSystState(self)
         self.state2 = soya.CoordSystState(self)
         self.state1_time = 0
         self.state2_time = 0
-        self.list_elapsecalls=[self.elapsed_time]
+        self.drivers = []
 
+        # computational limits    
+        self.min_elapse_time = 0
+        self.med_elapse_time = 1 / 20.0
+        self.max_elapse_time = 1 / 10.0
+
+    def add_driver(self,the_driver):
+        self.drivers.append(the_driver)
+    
     def set_timesimulation(self,sim_type):
         self.sim_type=sim_type
         
@@ -53,32 +128,16 @@ class Body(soya.Body):
         total_elapsed=0
         while seconds > self.min_elapse_time:
             if seconds > self.max_elapse_time:
-                seconds = self.max_elapse_time
-
-            for elapsedcall in self.list_elapsecalls:
-                elapsedcall(seconds)
-            # if elapsed_seconds : seconds = elapsed_seconds
-            assert seconds > self.min_elapse_time / 2.0 
+                seconds = self.med_elapse_time
 
             self.elapsed_real_time += seconds
+            for driver in self.drivers:
+                driver.elapse_to_time(self.elapsed_real_time)
+
             total_elapsed += seconds
             seconds = new_time - self.elapsed_real_time
         return total_elapsed 
-        
-    def addloopcall(self, funccall):
-        try:
-            print "Testing funccall..."
-            s=funccall(0)
-            print "return value: %s , expected 0" % s
-            assert s == 0
-            print "Ok!"
-            self.list_elapsecalls.append(funccall)
-        except:
-            raise
-    
-    def elapsed_time(self,seconds):
-        return seconds
-    
+           
     def get_absoluteangleXZ(self,vector=None):
         parent = self.get_root()
         if vector == None:
@@ -89,7 +148,7 @@ class Body(soya.Body):
         return xy_toangle(q.x,q.z)
 
     def begin_round(self):
-        soya.Body.begin_round(self)
+        #soya.Body.begin_round(self)
         
         
                 
@@ -110,7 +169,7 @@ class Body(soya.Body):
         
         
     def advance_time(self, proportion):
-        soya.Body.advance_time(self, proportion)
+        #soya.Body.advance_time(self, proportion)
         seconds = proportion * self.round_duration
         self.elapsed_render_time += seconds
         
@@ -153,16 +212,7 @@ class PhysicsBody(Body):
     def initialize_vars(self):
         self.speed  = soya.Vector(self,0,0,0)
         self.rotation = [0,0,0]
-        
-    def elapsed_time(self,seconds):
-        self.add_mul_vector(seconds, self.speed)
-        #self.rotate_x(seconds * self.rotation[0])
-        #self.rotate_y(seconds * self.rotation[1])
-        #self.rotate_z(seconds * self.rotation[2])
-
-        self.turn_x(seconds * self.rotation[0])
-        self.turn_y(seconds * self.rotation[1])
-        self.turn_z(seconds * self.rotation[2])
+        PhysicsBDriver(self)
         
         
         
@@ -180,8 +230,8 @@ class CharacterBody(PhysicsBody):
         self.look_at_speed = 500
         self.angle = 0 
         
-    def elapsed_time(self, seconds):
-        PhysicsBody.elapsed_time(self, seconds)
+    def elapsed_time(self, body, seconds):
+        PhysicsBody.elapsed_time(self, body, seconds)
 
         self.angle = self.get_absoluteangleXZ()
         if self.desiredangle >= 360: self.desiredangle-=360

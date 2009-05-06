@@ -1,4 +1,6 @@
-import sys, os, os.path, soya
+import sys, os, os.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), '..')))
+import soya
 import soya.widget as widget
 from soya import sdlconst
 import soya.widget
@@ -43,15 +45,17 @@ def is_pyWorlds_installed():
 	return True
 	
 	
-def init(create_basic=True):
+def init(create_basic=True, RPS = 25, FPS = 40):
 	global scene,mainloop
 	soya.init()
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
 	scene = basics.scene.scene
 	mainloop=soya.MainLoop(scene)
 	scene.mainloop=mainloop
-	scene.round_duration=.04
-	mainloop.round_duration=.04
+	scene.round_duration = 1.0 / float(RPS)
+	mainloop.round_duration = 1.0 / float(RPS)
+	mainloop.min_frame_duration = 1.0 / float(FPS)
+	
 	if create_basic:
 		init_basicscene()
 
