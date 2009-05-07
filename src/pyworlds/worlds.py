@@ -18,6 +18,10 @@ light = None
 animated_meshes = {}
 meshes = {}
 KEY = {}
+MOUSE_X = 0
+MOUSE_Y = 0
+MOUSE_BUTTON = {}
+
 # TODO: Place functions to access KEY, and return float or bool values. x>0.5 => True
 callback_round = None
 callback_advance = None
@@ -72,9 +76,10 @@ def begin_loop(callbackround=None, callbackadvance=None ):
 	global scene, callback_round, callback_advance, camera,mainloop
 	callback_round = callbackround
 	callback_advance = callbackadvance 
-	soya.set_root_widget(soya.widget.Group())
-	soya.root_widget.add(camera)
-	if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
+	soya.set_root_widget(camera)
+	#soya.set_root_widget(soya.widget.Group())
+	#soya.root_widget.add(camera)
+	#if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
 	scene_body = SceneBody(scene,None)
 	mainloop.main_loop()
 
@@ -101,28 +106,44 @@ def begin_guiloop(callbackround=None, callbackadvance=None ):
 
 
 class SceneBody(soya.Body):
-	def advance_time(self, proportion):
-		global callback_advance
-		soya.Body.advance_time(self, proportion)
-		if callback_advance: callback_advance(proportion)
+  def advance_time(self, proportion):
+	  global callback_advance
+	  soya.Body.advance_time(self, proportion)
+	  if callback_advance: callback_advance(proportion)
 	
-	def begin_round(self):
-		global KEY,callback_round
-		soya.Body.begin_round(self)		
-		for event in soya.process_event():
-			if event[0] == soya.sdlconst.KEYDOWN:
-				if event[1] == soya.sdlconst.K_ESCAPE: soya.MAIN_LOOP.stop()
-				else:
-					KEY[event[1]]=True
-					
-			elif event[0] == sdlconst.KEYUP:
-				if event[1] in KEY:	del KEY[event[1]]
-				
-			elif event[0] == sdlconst.QUIT:
-				soya.MAIN_LOOP.stop()				
-		
-		if callback_round: callback_round()
+  def begin_round(self):
+    global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON
+    soya.Body.begin_round(self)
+    for event in soya.process_event():
 
+        if event[0] == soya.sdlconst.KEYDOWN:
+            if event[1] == soya.sdlconst.K_ESCAPE: soya.MAIN_LOOP.stop()
+            else:
+                KEY[event[1]]=event[:]
+
+        elif event[0] == sdlconst.KEYUP:
+          if event[1] in KEY:   del KEY[event[1]]
+
+        elif event[0] == sdlconst.QUIT:
+            soya.MAIN_LOOP.stop()				
+
+        elif event[0] == soya.sdlconst.MOUSEBUTTONDOWN:
+                    MOUSE_BUTTON[event[1]]=event[:]
+                    MOUSE_X = event[2]			
+                    MOUSE_Y = event[3]			
+        
+        elif event[0] == soya.sdlconst.MOUSEBUTTONUP:			
+                    del MOUSE_BUTTON[event[1]] 
+                    MOUSE_X = event[2]			
+                    MOUSE_Y = event[3]			
+        
+        elif event[0] == soya.sdlconst.MOUSEMOTION:
+                    MOUSE_X = event[1]			
+                    MOUSE_Y = event[2]			
+
+
+
+    if callback_round: callback_round()
 
 
 class Body(soya.Body):
