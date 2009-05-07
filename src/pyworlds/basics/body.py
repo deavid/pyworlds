@@ -251,8 +251,12 @@ class Label3DFlat(soya.label3d.Label3D):
     def advance_time(self,proportion):
         if self.flat_follows:
             self.move(self.flat_follows)
-            self.add_xyz(self.flat_offset[0],self.flat_offset[1],self.flat_offset[2])
             self.size = self.flat_size + self.flat_compensation * self.flat_size * self.distance_to(pyworlds.worlds.camera)
-        else:
-            self.set_xyz(0,0,-10)
+            
+        matrix = list(self.matrix)
+        for x in range(3):
+            for y in range(3):
+                matrix[x+y*4] = pyworlds.worlds.camera.matrix[x+y*4]
+        self.matrix = tuple(matrix)
+        self.add_vector(soya.Vector(self,self.flat_offset[0],self.flat_offset[1],self.flat_offset[2]))
         

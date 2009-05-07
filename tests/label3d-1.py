@@ -90,6 +90,16 @@ label4 = b.Label3DFlat(follows = box4, text = "Pabellon 4")
 
 
 def game_logic():
+    if c.K_a in w.KEY: w.camera.rotate_y(1)
+    if c.K_s in w.KEY: w.camera.rotate_y(-1)
+    
+    if c.K_LEFT in w.KEY: w.camera.add_xyz(-.1,0,0)
+    if c.K_RIGHT in w.KEY: w.camera.add_xyz(.1,0,0)
+    if c.K_UP in w.KEY: w.camera.add_xyz(0,.1,0)
+    if c.K_DOWN in w.KEY: w.camera.add_xyz(0,-.1,0)
+    if c.K_RSHIFT in w.KEY: w.camera.add_xyz(0,0,.1)
+    if c.K_RCTRL in w.KEY: w.camera.add_xyz(0,0,-.1)
+    
     if 1 in w.MOUSE_BUTTON:
         button = w.MOUSE_BUTTON[1]
         box1.model = box_mesh
