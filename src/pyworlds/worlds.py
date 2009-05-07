@@ -12,7 +12,7 @@ global scene,camera,light
 scene = None
 camera = None
 light = None
-
+pyworlds_engine = ""
 # TODO: Create a full-camera class to handle several kinds of performance for cameras
 
 animated_meshes = {}
@@ -48,7 +48,8 @@ def is_pyWorlds_installed():
 	
 	
 def init(create_basic=True):
-	global scene,mainloop
+	global scene,mainloop,pyworlds_engine
+	pyworlds_engine = "soya"
 	soya.init()
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
 	scene = basics.scene.scene
@@ -97,10 +98,10 @@ def init_gui():
 	viewport = soya.gui.CameraViewport(root, camera)
 	
 
-def init_pudding():
-	global root,viewport,camera,scene,mainloop
+def init_pudding(width = 500,height = 500, options = {}):
+	global root,viewport,camera,scene,mainloop, pyworlds_engine
         soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
-	
+	pyworlds_engine = "pudding"
         import soya.pudding as pudding
         soya.init()
 	pudding.init()
@@ -112,8 +113,8 @@ def init_pudding():
         
 	
         init_basicscene()
-        soya.set_root_widget(pudding.core.RootWidget())
-        soya.root_widget.add_child(camera)
+        soya.set_root_widget(pudding.core.RootWidget(width = width,height = height))
+        if 'nochild' not in options: soya.root_widget.add_child(camera)
 	
         
 
@@ -139,7 +140,14 @@ class SceneBody(soya.Body):
   def begin_round(self):
     global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON
     soya.Body.begin_round(self)
-    for event in soya.process_event():
+    array_events = []
+    if pyworlds_engine == "soya":
+        array_events = soya.process_event()
+    elif pyworlds_engine == "pudding":
+        import soya.pudding as pudding
+        array_events = pudding.process_event()
+    
+    for event in array_events:
 
         if event[0] == soya.sdlconst.KEYDOWN:
             if event[1] == soya.sdlconst.K_ESCAPE: soya.MAIN_LOOP.stop()
