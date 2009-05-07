@@ -25,9 +25,11 @@ SIM_TYPE= {
         
     }
 
-class Body(soya.Body):
+class wBody(soya.World):
     def __init__(self, parent = None, model = None):
-        soya.Body.__init__(self,parent,model)
+        soya.World.__init__(self,parent)
+
+        self.body = soya.Body(self,model)
         self.set_timefactor(1)
         self.elapsed_render_time = 0
         self.elapsed_round_time = 0
@@ -67,11 +69,6 @@ class Body(soya.Body):
         
     def addloopcall(self, funccall):
         try:
-            print "Testing funccall..."
-            s=funccall(0)
-            print "return value: %s , expected 0" % s
-            assert s == 0
-            print "Ok!"
             self.list_elapsecalls.append(funccall)
         except:
             raise
@@ -89,7 +86,7 @@ class Body(soya.Body):
         return xy_toangle(q.x,q.z)
 
     def begin_round(self):
-        soya.Body.begin_round(self)
+        soya.World.begin_round(self)
         
         
                 
@@ -110,7 +107,7 @@ class Body(soya.Body):
         
         
     def advance_time(self, proportion):
-        soya.Body.advance_time(self, proportion)
+        soya.World.advance_time(self, proportion)
         seconds = proportion * self.round_duration
         self.elapsed_render_time += seconds
         
@@ -125,6 +122,7 @@ class Body(soya.Body):
                 self.interpolate(self.state1, self.state2, factor)
 
     def end_round(self):
+        soya.World.end_round(self)
         if (self.sim_type == SIM_TYPE['live'] or 
                 self.sim_type == SIM_TYPE['both']):
             pass
@@ -133,7 +131,7 @@ class Body(soya.Body):
         
 
 
-class PhysicsBody(Body):
+class wPhysicsBody(wBody):
     def __init__(self, parent = 'scene', mesh = None, mesh_file = None, animatedmesh_file = None):
         if parent == 'scene':
             
@@ -147,7 +145,7 @@ class PhysicsBody(Body):
 
         self.mesh = mesh
             
-        Body.__init__(self,parent,mesh)
+        wBody.__init__(self,parent,mesh)
         self.initialize_vars()
         
     def initialize_vars(self):
@@ -166,93 +164,5 @@ class PhysicsBody(Body):
         
         
         
-class CharacterBody(PhysicsBody):
-    def initialize_vars(self):
-        PhysicsBody.initialize_vars(self)
-        self.states = {
-                        "stop" : ["garde","attente"], 
-                        "walk" : ["marche"],
-                        }
-        self.state = None
-        self.statecycle = None
-        self.character_setstate("stop")
-        self.desiredangle = 0
-        self.look_at_speed = 500
-        self.angle = 0 
-        
-    def elapsed_time(self, seconds):
-        PhysicsBody.elapsed_time(self, seconds)
-
-        self.angle = self.get_absoluteangleXZ()
-        if self.desiredangle >= 360: self.desiredangle-=360
-        if self.desiredangle < 0: self.desiredangle+=360
-        
-        anglediff = self.desiredangle - self.angle
-        if anglediff > 180:    anglediff-=360
-        if anglediff < -180:    anglediff+=360
-        factor = self.look_at_speed * seconds
-        # -> we can't handle computing limit in this way:
-        #if factor > 1/elapsed : factor = 1/elapsed 
-        if factor > 1/seconds: 
-            factor = 1/seconds
-        
-        anglemov = anglediff * factor
-        
-        if abs(self.rotation[1])>abs(anglemov): 
-            self.rotation[1]=(self.rotation[1]-anglemov)/2.0
-        else:
-            self.rotation[1]=(self.rotation[1]*5-anglemov)/6.0
-        if abs(anglediff)<1:
-            self.rotation[1]=-anglediff
-            
-        return seconds
-        
-    def character_setstate(self,newstate):
-        if newstate==self.state: return False
-        if not hasattr(self.mesh,"animations"): return False
-        if len(self.states[newstate])<1: raise
-        newstatecycle=None
-        try:
-            for statecycle in self.states[newstate]:
-                if statecycle in self.mesh.animations:
-                    newstatecycle=statecycle
-                    break;
-        except:
-            raise
-        if not newstatecycle: 
-            print "Not found any animation for %s: " % newstate,  self.states[newstate]
-            print "Available animations:", self.mesh.animations.keys()
-            raise
-
-        if self.statecycle:
-            self.animate_clear_cycle(self.statecycle)            
-            self.statecycle = None
-        self.animate_blend_cycle(newstatecycle)
-        self.statecycle = newstatecycle
-        self.state=newstate
-        return True
-        
 
 
-
-
-class Label3DFlat(soya.label3d.Label3D):
-    def __init__(self, size = 0.01, compensation = 0.02, follows = None, offset = (0.0,1.0,1.0), *args, **kwargs):
-        if 'parent' not in kwargs:
-            kwargs['parent']=pyworlds.worlds.scene
-        soya.label3d.Label3D.__init__(self, *args, **kwargs)
-        self.flat_follows = follows
-        self.flat_offset = offset
-        self.flat_size = size
-        self.flat_compensation = compensation
-        self.size = size
-        self.lit = 0
-
-    def advance_time(self,proportion):
-        if self.flat_follows:
-            self.move(self.flat_follows)
-            self.add_xyz(self.flat_offset[0],self.flat_offset[1],self.flat_offset[2])
-            self.size = self.flat_size + self.flat_compensation * self.flat_size * self.distance_to(pyworlds.worlds.camera)
-        else:
-            self.set_xyz(0,0,-10)
-        
