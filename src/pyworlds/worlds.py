@@ -72,11 +72,17 @@ def init_basicscene():
 	#camera = soya.TravelingCamera(scene)
 
 
-def begin_loop(callbackround=None, callbackadvance=None ):
+def begin_loop(callbackround=None, callbackadvance=None, engine="soya" ):
 	global scene, callback_round, callback_advance, camera,mainloop
+        import soya.pudding as pudding
 	callback_round = callbackround
 	callback_advance = callbackadvance 
-	soya.set_root_widget(camera)
+	if engine=="soya":
+            soya.set_root_widget(camera)
+        elif engine=="pudding":
+            pass
+        else:
+            print "error engine %s unknown" % engine
 	#soya.set_root_widget(soya.widget.Group())
 	#soya.root_widget.add(camera)
 	#if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
@@ -90,7 +96,26 @@ def init_gui():
 	root = soya.gui.RootLayer(None)
 	viewport = soya.gui.CameraViewport(root, camera)
 	
+
+def init_pudding():
+	global root,viewport,camera,scene,mainloop
+        soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
 	
+        import soya.pudding as pudding
+        soya.init()
+	pudding.init()
+	scene = basics.scene.scene
+	mainloop=pudding.main_loop.MainLoop(scene)
+	scene.mainloop=mainloop
+	scene.round_duration=.04
+	mainloop.round_duration=.04
+        
+	
+        init_basicscene()
+        soya.set_root_widget(pudding.core.RootWidget())
+        soya.root_widget.add_child(camera)
+	
+        
 
 def begin_guiloop(callbackround=None, callbackadvance=None ):
 	global root, mainloop
