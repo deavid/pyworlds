@@ -281,3 +281,32 @@ class CharacterBody(PhysicsBody):
         self.statecycle = newstatecycle
         self.state=newstate
         return True
+        
+
+
+
+
+class Label3DFlat(soya.label3d.Label3D):
+    def __init__(self, size = 0.01, compensation = 0.02, follows = None, offset = (0.0,1.0,1.0), *args, **kwargs):
+        if 'parent' not in kwargs:
+            kwargs['parent']=pyworlds.worlds.scene
+        soya.label3d.Label3D.__init__(self, *args, **kwargs)
+        self.flat_follows = follows
+        self.flat_offset = offset
+        self.flat_size = size
+        self.flat_compensation = compensation
+        self.size = size
+        self.lit = 0
+
+    def advance_time(self,proportion):
+        if self.flat_follows:
+            self.move(self.flat_follows)
+            self.size = self.flat_size + self.flat_compensation * self.flat_size * self.distance_to(pyworlds.worlds.camera)
+            
+        matrix = list(self.matrix)
+        for x in range(3):
+            for y in range(3):
+                matrix[x+y*4] = pyworlds.worlds.camera.matrix[x+y*4]
+        self.matrix = tuple(matrix)
+        self.add_vector(soya.Vector(self,self.flat_offset[0],self.flat_offset[1],self.flat_offset[2]))
+        
