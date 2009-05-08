@@ -62,6 +62,8 @@ def init(create_basic=True):
 
 def init_basicscene():
 	global scene, light, camera
+	scene_body = SceneBody(scene,None)
+
 	light = soya.Light(scene)
 	light.directional = 1
 	light.rotate_x(-90)
@@ -87,7 +89,6 @@ def begin_loop(callbackround=None, callbackadvance=None, engine="soya" ):
 	#soya.set_root_widget(soya.widget.Group())
 	#soya.root_widget.add(camera)
 	#if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
-	scene_body = SceneBody(scene,None)
 	mainloop.main_loop()
 
 def init_gui():

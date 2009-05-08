@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
 			# metadata ---
-			name='pyWorlds',
+			name='pyworlds',
       version='0.1.0',
 			description='Very High Layer for Soya',
 			author='David Martinez Marti', 

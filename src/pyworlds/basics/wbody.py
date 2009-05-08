@@ -165,4 +165,54 @@ class wPhysicsBody(wBody):
         
         
 
+m_black = soya.Material()
+m_black.shininess = 0.1
+m_black.diffuse   = (0.0, 0.0, 0.0, 0.2)
+m_black.specular  = (0.0, 0.0, 0.0, 0.2)
 
+m_red = soya.Material()
+m_red.shininess = 0.1
+m_red.diffuse   = (1.0, 0.0, 0.0, 0.5)
+m_red.specular  = (1.0, 0.0, 0.0, 0.5)
+
+
+class wLabel3DFlat(soya.World):
+    def __init__(self, size = 0.01, compensation = 0.02, follows = None, offset = (0.0,1.0,1.0), *args, **kwargs):
+        if 'parent' not in kwargs:
+            kwargs['parent']=pyworlds.worlds.scene
+        soya.World.__init__(self, kwargs['parent'])
+        kwargs['parent'] = self
+        text = ""
+        if 'text' in kwargs:
+            text =  kwargs['text']
+            
+        self.box =  soya.World(None)
+        pyworlds.utils.Box(len('text')*size*50,size*40,0,insert_into=self.box, material=m_black, origin = (0,0.1,-0.01) )
+        self.box_normal = self.box.to_model()
+        
+        self.box =  soya.World(None)
+        pyworlds.utils.Box(len('text')*size*50,size*40,0,insert_into=self.box, material=m_red, origin = (0,0.1,-0.01) )
+        self.box_selected = self.box.to_model()
+        self.model = self.box_normal
+        
+        self.label = soya.label3d.Label3D(**kwargs)
+        self.flat_follows = follows
+        self.flat_offset = offset
+        self.flat_size = size
+        self.flat_compensation = compensation
+        self.label.size = size
+        self.label.lit = 0
+
+        
+    def advance_time(self,proportion):
+        if self.flat_follows:
+            self.move(self.flat_follows)
+            
+        matrix = list(self.matrix)
+        for x in range(3):
+            for y in range(3):
+                matrix[x+y*4] = pyworlds.worlds.camera.matrix[x+y*4]
+        self.matrix = tuple(matrix)
+        self.add_vector(soya.Vector(self,self.flat_offset[0],self.flat_offset[1],self.flat_offset[2]))
+        self.add_mul_vector( self.flat_compensation,self.vector_to(pyworlds.worlds.camera))
+        
