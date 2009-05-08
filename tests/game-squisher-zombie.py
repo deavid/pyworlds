@@ -392,8 +392,8 @@ worlds.camera.fov = 60
 frame = 0
 
 def mainloop():
-	global gameturn,sorcerer,lblPoints,sorcerer
-	lblPoints.text = u"%d Points" % sorcerer.points
+	global gameturn,sorcerer,sorcerer
+	# lblPoints.text = u"%d Points" % sorcerer.points
 	
 	BodyInTurn=gameturn.inTurn()
 	if BodyInTurn!=None:
@@ -462,26 +462,27 @@ def renderloop(proportion):
 	worlds.camera.fov = (worlds.camera.fov  * 10+ dfov) / 11.0
 	
 	
-worlds.init_gui()
-import soya.gui
+worlds.init()
 
-table = soya.gui.VTable(worlds.root, 2)
-table.row_pad = 10
-table.col_pad = 10
-table.border_pad = 1
+#import soya.gui
 
-label=soya.gui.Label(table, u"Score:")
-label.color = (1.0,1.0,1.0,0.5)
+#table = soya.gui.VTable(worlds.root, 2)
+#table.row_pad = 10
+#table.col_pad = 10
+#table.border_pad = 1
 
-lblPoints=soya.gui.Label(table, u"0 Points")
-lblPoints.color = (1.0,1.0,1.0,0.8)
+#label=soya.gui.Label(table, u"Score:")
+#label.color = (1.0,1.0,1.0,0.5)
+
+#lblPoints=soya.gui.Label(table, u"0 Points")
+#lblPoints.color = (1.0,1.0,1.0,0.8)
 
  
 #import hotshot, hotshot.stats
 #prof = hotshot.Profile("worlds.prof")
 #prof.start()
 
-worlds.begin_guiloop(mainloop, renderloop)
+worlds.begin_loop(mainloop, renderloop)
 
 #prof.stop()
 #prof.close()
