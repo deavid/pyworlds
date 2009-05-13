@@ -42,6 +42,7 @@ class wBody(soya.World):
         self.state2 = soya.CoordSystState(self)
         self.state1_time = 0
         self.state2_time = 0
+        self.round_duration = 0.04
         self.list_elapsecalls=[self.elapsed_time]
 
     def set_timesimulation(self,sim_type):
