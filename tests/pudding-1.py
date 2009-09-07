@@ -38,9 +38,9 @@ c.bottom = 10
 c.anchors = pudding.ANCHOR_BOTTOM
 
 d = c.add_child(pudding.control.Button(label = 'Button'), pudding.EXPAND_NONE)
-d.background_color = (0.5, 0.6, 0.8, 0.5)
+d.background_color = (1.0, 0.0, 0.0, 0.5)
 d = c.add_child(pudding.control.Button(width = 20,height = 20, label = ''))
-d.background_color = (0.9, 0.6, 0.8, 0.5)
+d.background_color = (0.0, 1.0, 0.0, 0.5)
 
 
 

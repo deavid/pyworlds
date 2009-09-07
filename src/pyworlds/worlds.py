@@ -167,7 +167,8 @@ class SceneBody(soya.Body):
                     MOUSE_Y = event[3]			
         
         elif event[0] == soya.sdlconst.MOUSEBUTTONUP:			
-                    del MOUSE_BUTTON[event[1]] 
+                    if MOUSE_BUTTON.has_key(event[1]):
+                        del MOUSE_BUTTON[event[1]]
                     MOUSE_X = event[2]			
                     MOUSE_Y = event[3]			
         
