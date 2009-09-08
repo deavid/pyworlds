@@ -1,5 +1,57 @@
 import soya,math
 
+def Face(x = 0,z = 0, plane = "XZ", parent = None, material = None, insert_into = None, texcoord_rect=(0,0,1,1), origin=(0,0,0)):
+    """Face(parent = None, material = None, insert_into = None) -> World
+
+Creates and returns a World in PARENT, containing a face(x,y) length centered
+on the origin, with material MATERIAL.
+
+If INSERT_INTO is not None, the cube's faces are inserted into it, instead of
+creating a new world.
+
+The return value is a tuple of: ( World, Face, VertexArray )
+
+plane is the plane where we want the face. Is one of: XZ, XY, YZ.
+
+"""
+    ox=origin[0]
+    oy=origin[1]
+    oz=origin[2]
+
+    face = insert_into or soya.World(parent)
+    r = texcoord_rect
+    tx1 = r[0]
+    tx2 = r[2]
+
+    ty1 = r[1]
+    ty2 = r[3]
+    if plane == "XZ":
+        vertex_array = [   
+            soya.Vertex(face,  0.5*x+ox,  oy,  0.5 * z+oz, tx2, ty2),
+            soya.Vertex(face,  0.5*x+ox,  oy, -0.5 * z+oz, tx2, ty1),
+            soya.Vertex(face, -0.5*x+ox,  oy, -0.5 * z+oz, tx1, ty1),
+            soya.Vertex(face, -0.5*x+ox,  oy,  0.5 * z+oz, tx1, ty2),
+            ]
+    elif plane == "XY":
+        vertex_array = [   
+            soya.Vertex(face,  0.5*x+ox,  0.5 * z+oy, oz, tx2, ty2),
+            soya.Vertex(face,  0.5*x+ox, -0.5 * z+oy, oz, tx2, ty1),
+            soya.Vertex(face, -0.5*x+ox, -0.5 * z+oy, oz, tx1, ty1),
+            soya.Vertex(face, -0.5*x+ox,  0.5 * z+oy, oz, tx1, ty2),
+            ]
+    elif plane == "YZ":
+        vertex_array = [   
+            soya.Vertex(face, ox,  0.5*x+oy,  0.5 * z+oz, tx2, ty2),
+            soya.Vertex(face, ox,  0.5*x+oy, -0.5 * z+oz, tx2, ty1),
+            soya.Vertex(face, ox, -0.5*x+oy, -0.5 * z+oz, tx1, ty1),
+            soya.Vertex(face, ox, -0.5*x+oy,  0.5 * z+oz, tx1, ty2),
+            ]
+    
+    theface = soya.Face(face, vertex_array , material)
+    return face, theface, vertex_array
+
+
+
 def xy_toangle(x1,y1):
 	h_xz=math.sqrt(x1*x1+y1*y1)
 	x=x1/h_xz
