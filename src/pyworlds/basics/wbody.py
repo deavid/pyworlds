@@ -186,23 +186,28 @@ class wLabel3DFlat(soya.World):
         text = ""
         if 'text' in kwargs:
             text =  kwargs['text']
+
+        self.label = soya.label3d.Label3D(**kwargs)
+        self.label.size = size
+        self.label.lit = 0
+        self.label.render()
             
         self.box =  soya.World(None)
-        pyworlds.utils.Box(len('text')*size*50,size*40,0,insert_into=self.box, material=m_black, origin = (0,0.1,-0.01) )
+        self.text_width, self.text_height = self.label._font.get_print_size(self.label._text)
+        self.text_width+=10
+        self.text_height+=10
+        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_black, origin = (0,0.1,-0.01) )
         self.box_normal = self.box.to_model()
         
         self.box =  soya.World(None)
-        pyworlds.utils.Box(len('text')*size*50,size*40,0,insert_into=self.box, material=m_red, origin = (0,0.1,-0.01) )
+        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_red, origin = (0,0.1,-0.01) )
         self.box_selected = self.box.to_model()
         self.model = self.box_normal
         
-        self.label = soya.label3d.Label3D(**kwargs)
         self.flat_follows = follows
         self.flat_offset = offset
         self.flat_size = size
         self.flat_compensation = compensation
-        self.label.size = size
-        self.label.lit = 0
 
         
     def advance_time(self,proportion):
