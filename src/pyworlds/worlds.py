@@ -61,7 +61,7 @@ def init(create_basic=True):
 		init_basicscene()
 
 def init_basicscene():
-	global scene, light, camera
+	global scene, light, camera, scene_body
 	scene_body = SceneBody(scene,None)
 
 	light = soya.Light(scene)
@@ -121,7 +121,7 @@ def init_pudding(width = 500,height = 500, options = {}):
 
 def begin_guiloop(callbackround=None, callbackadvance=None ):
 	global root, mainloop
-	global scene, callback_round, callback_advance, camera
+	global scene, callback_round, callback_advance, camera, scene_body
 	callback_round = callbackround
 	callback_advance = callbackadvance 
 
@@ -130,6 +130,18 @@ def begin_guiloop(callbackround=None, callbackadvance=None ):
 	scene_body = SceneBody(scene,None)
 	mainloop.main_loop()
 
+def clearScene():
+    global scene,camera,light,scene_body
+
+    validObj=[scene_body,camera,light]
+    toRemove=[]
+    for body in scene.children:
+        if body not in validObj: toRemove.append(body)
+    
+    for body in toRemove:
+        #print body
+        scene.children.remove(body)
+            
 
 
 class SceneBody(soya.Body):
