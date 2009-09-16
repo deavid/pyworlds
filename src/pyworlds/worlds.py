@@ -89,7 +89,7 @@ def begin_loop(callbackround=None, callbackadvance=None, engine="soya" ):
 	#soya.set_root_widget(soya.widget.Group())
 	#soya.root_widget.add(camera)
 	#if enable_fps: soya.root_widget.add(soya.widget.FPSLabel())
-	mainloop.main_loop()
+	return mainloop.main_loop()
 
 def init_gui():
 	global root,viewport
