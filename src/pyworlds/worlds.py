@@ -113,7 +113,7 @@ def init_pudding(width = 500,height = 500, options = {}):
 	mainloop.round_duration=.04
         
 	
-        init_basicscene()
+        if 'nobasics' not in options: init_basicscene()
         soya.set_root_widget(pudding.core.RootWidget(width = width,height = height))
         if 'nochild' not in options: soya.root_widget.add_child(camera)
 	
@@ -130,10 +130,11 @@ def begin_guiloop(callbackround=None, callbackadvance=None ):
 	scene_body = SceneBody(scene,None)
 	mainloop.main_loop()
 
-def clearScene():
+def clearScene(fullClear = False):
     global scene,camera,light,scene_body
 
     validObj=[scene_body,camera,light]
+    if fullClear: validObj=[]
     toRemove=[]
     for body in scene.children:
         if body not in validObj: toRemove.append(body)
