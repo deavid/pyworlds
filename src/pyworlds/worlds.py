@@ -8,6 +8,8 @@ from utils import *
 import basics.scene
 
 global scene,camera,light
+global MOUSE_WHEEL
+
 
 scene = None
 camera = None
@@ -21,6 +23,7 @@ KEY = {}
 MOUSE_X = 0
 MOUSE_Y = 0
 MOUSE_BUTTON = {}
+MOUSE_WHEEL = 0
 
 # TODO: Place functions to access KEY, and return float or bool values. x>0.5 => True
 callback_round = None
@@ -152,6 +155,7 @@ class SceneBody(soya.Body):
 	  if callback_advance: callback_advance(proportion)
 	
   def begin_round(self):
+    global MOUSE_WHEEL
     global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON
     soya.Body.begin_round(self)
     array_events = []
@@ -162,7 +166,7 @@ class SceneBody(soya.Body):
         array_events = pudding.process_event()
     
     for event in array_events:
-
+        
         if event[0] == soya.sdlconst.KEYDOWN:
             if event[1] == soya.sdlconst.K_ESCAPE: soya.MAIN_LOOP.stop()
             else:
@@ -176,10 +180,13 @@ class SceneBody(soya.Body):
 
         elif event[0] == soya.sdlconst.MOUSEBUTTONDOWN:
                     MOUSE_BUTTON[event[1]]=event[:]
-                    MOUSE_X = event[2]			
-                    MOUSE_Y = event[3]			
+                    MOUSE_X = event[2]
+                    MOUSE_Y = event[3]
+                    a,b,c,d = MOUSE_BUTTON[event[1]]
+                    if a == 5 and (b==4 or b==5): MOUSE_WHEEL = b
         
         elif event[0] == soya.sdlconst.MOUSEBUTTONUP:			
+                    #print "Up: ",MOUSE_BUTTON[event[1]]
                     if MOUSE_BUTTON.has_key(event[1]):
                         del MOUSE_BUTTON[event[1]]
                     MOUSE_X = event[2]			
@@ -189,8 +196,7 @@ class SceneBody(soya.Body):
                     MOUSE_X = event[1]			
                     MOUSE_Y = event[2]			
 
-
-
+        
     if callback_round: callback_round()
 
 
