@@ -196,11 +196,11 @@ class wLabel3DFlat(soya.World):
         self.text_width, self.text_height = self.label._font.get_print_size(self.label._text)
         self.text_width+=10
         self.text_height+=10
-        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_black, origin = (0,0.1,-0.01) )
+        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_black, origin = (0,1*size,-0.01) )
         self.box_normal = self.box.to_model()
         
         self.box =  soya.World(None)
-        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_red, origin = (0,0.1,-0.01) )
+        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_red, origin = (0,1*size,-0.01) )
         self.box_selected = self.box.to_model()
         self.model = self.box_normal
         
@@ -220,5 +220,13 @@ class wLabel3DFlat(soya.World):
                 matrix[x+y*4] = pyworlds.worlds.camera.matrix[x+y*4]
         self.matrix = tuple(matrix)
         self.add_vector(soya.Vector(self,self.flat_offset[0],self.flat_offset[1],self.flat_offset[2]))
-        self.add_mul_vector( self.flat_compensation,self.vector_to(pyworlds.worlds.camera))
+        vect = self.vector_to(pyworlds.worlds.camera)
+        lenvect = vect.length()
+        flat_compensation = self.flat_compensation
+        if self.flat_compensation<0:
+            len2 = lenvect + self.flat_compensation * 180.0 / pyworlds.worlds.camera.fov
+            flat_compensation = len2 / float(lenvect)
+
+            
+        self.add_mul_vector( flat_compensation,self.vector_to(pyworlds.worlds.camera))
         
