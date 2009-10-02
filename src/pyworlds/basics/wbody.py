@@ -211,8 +211,24 @@ class wLabel3DFlat(soya.World):
 
         
     def advance_time(self,proportion):
+
         if self.flat_follows:
             self.move(self.flat_follows)
+            maxparent = pyworlds.worlds.scene
+            
+            visible= self.flat_follows.visible
+            objparent = self.flat_follows
+            while objparent.is_inside(maxparent) and visible:
+                if hasattr(objparent.parent,"parent") and hasattr(objparent.parent,"visible"):
+                    objparent = objparent.parent
+
+                    if objparent.visible == False: 
+                        visible=False
+                        break
+                else:
+                    break
+                
+            self.visible=visible
             
         matrix = list(self.matrix)
         for x in range(3):
