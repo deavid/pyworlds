@@ -229,6 +229,7 @@ class wLabel3DFlat(soya.World):
                     break
                 
             self.visible=visible
+            self.solid=visible
             
         matrix = list(self.matrix)
         for x in range(3):
