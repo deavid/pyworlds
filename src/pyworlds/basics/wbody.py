@@ -178,7 +178,7 @@ m_red.specular  = (1.0, 0.0, 0.0, 0.5)
 
 
 class wLabel3DFlat(soya.World):
-    def __init__(self, size = 0.01, compensation = 0.02, follows = None, offset = (0.0,1.0,1.0), *args, **kwargs):
+    def __init__(self, size = 0.01, compensation = 0.02, follows = None, material = m_black, offset = (0.0,1.0,1.0), *args, **kwargs):
         if 'parent' not in kwargs:
             kwargs['parent']=pyworlds.worlds.scene
         soya.World.__init__(self, kwargs['parent'])
@@ -196,11 +196,11 @@ class wLabel3DFlat(soya.World):
         self.text_width, self.text_height = self.label._font.get_print_size(self.label._text)
         self.text_width+=10
         self.text_height+=10
-        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_black, origin = (0,1*size,-0.01) )
+        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=material, origin = (0,1*size,-0.01) , lit = False)
         self.box_normal = self.box.to_model()
         
         self.box =  soya.World(None)
-        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_red, origin = (0,1*size,-0.01) )
+        pyworlds.utils.Box(self.text_width*size,size*self.text_height,0,insert_into=self.box, material=m_red, origin = (0,1*size,-0.01), lit = False )
         self.box_selected = self.box.to_model()
         self.model = self.box_normal
         
