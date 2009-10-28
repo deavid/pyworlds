@@ -1,4 +1,5 @@
 import soya
+import soya.label3d
 import pyworlds.worlds
 from pyworlds.utils import *
 
