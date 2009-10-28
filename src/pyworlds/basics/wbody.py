@@ -187,6 +187,8 @@ class wLabel3DFlat(soya.World):
         if 'text' in kwargs:
             text =  kwargs['text']
 
+        self.xz_angular_distances = [-1]*360
+        
         self.label = soya.label3d.Label3D(**kwargs)
         self.label.size = size
         self.label.lit = 0
@@ -209,6 +211,32 @@ class wLabel3DFlat(soya.World):
         self.flat_size = size
         self.flat_compensation = compensation
 
+    def get_xz_correction(self,angle):
+        an = int(round(angle))
+        if an<0: an+=360
+        if self.xz_angular_distances[an]>0:
+            return self.xz_angular_distances[an]
+        anr = an
+        szr = 0
+        while self.xz_angular_distances[anr]<=0 and szr <20: 
+            anr+=1
+            szr+=1
+            if anr>=360: anr-=360
+        vr = self.xz_angular_distances[anr]
+        
+        anl = an
+        szl = 0
+        while self.xz_angular_distances[anl]<=0 and szl <20: 
+            anl-=1
+            szl+=1
+            if anl<0: anl+=360
+        
+        vl = self.xz_angular_distances[anl]
+        if szl >= 20 or szr >= 20: return -1
+        size = szr + szl
+        
+        return (vl * szr + vr * szl) / float(size)
+
         
     def advance_time(self,proportion):
 
@@ -230,6 +258,19 @@ class wLabel3DFlat(soya.World):
                 
             self.visible=visible
             self.solid=visible
+            if visible and len(filter(lambda x: x>0,self.xz_angular_distances)):
+                
+                vtocam = self.flat_follows.vector_to( pyworlds.worlds.camera )
+                x = vtocam.x
+                y = -vtocam.z
+                vtocam.y = 0
+                angle = math.atan2(y,x) * 180 / math.pi
+                dist = self.get_xz_correction(angle)
+                if dist > 0:
+                    vtocam.normalize()
+                    self.add_mul_vector(dist, vtocam)
+                else:
+                    print "No se encuentra distancia para angulo", angle  
             
         matrix = list(self.matrix)
         for x in range(3):
