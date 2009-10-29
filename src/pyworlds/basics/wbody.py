@@ -188,6 +188,10 @@ class wLabel3DFlat(soya.World):
             text =  kwargs['text']
 
         self.xz_angular_distances = [-1]*360
+        self.xz_angular_distances_active = False
+        self.xz_angular_distances_lastangle = -1
+        self.xz_angular_distances_lastdist = 0
+        self.xz_angular_distances_newdist = -1
         
         self.label = soya.label3d.Label3D(**kwargs)
         self.label.size = size
@@ -258,19 +262,30 @@ class wLabel3DFlat(soya.World):
                 
             self.visible=visible
             self.solid=visible
-            if visible and len(filter(lambda x: x>0,self.xz_angular_distances)):
+            if visible and self.xz_angular_distances_active:
                 
                 vtocam = self.flat_follows.vector_to( pyworlds.worlds.camera )
                 x = vtocam.x
                 y = -vtocam.z
                 vtocam.y = 0
                 angle = math.atan2(y,x) * 180 / math.pi
-                dist = self.get_xz_correction(angle)
-                if dist > 0:
-                    vtocam.normalize()
-                    self.add_mul_vector(dist, vtocam)
-                else:
-                    print "No se encuentra distancia para angulo", angle  
+                if abs(self.xz_angular_distances_lastangle - angle)>2:
+                    self.xz_angular_distances_lastangle = angle
+                    iangle = int(angle)
+                    dist1 = self.get_xz_correction(iangle-1)
+                    dist2 = self.get_xz_correction(iangle+1)
+                    if dist1 > 0 and dist2>0:
+                        sz = 2
+                        pos1 = angle - (iangle-1)
+                        pos2 = sz - pos1
+                        dist = (dist1 * pos2 + dist2 * pos1) / float(sz)
+                        self.xz_angular_distances_newdist = dist
+
+                vtocam.normalize()
+                self.xz_angular_distances_lastdist = (self.xz_angular_distances_lastdist * 2 + self.xz_angular_distances_newdist) / 3.0
+                self.add_mul_vector(self.xz_angular_distances_lastdist, vtocam)
+                    #else:
+                    #    print "No se encuentra distancia para angulo", angle  
             
         matrix = list(self.matrix)
         for x in range(3):
