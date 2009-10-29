@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import soya
 import pyworlds.worlds
 from pyworlds.utils import *
@@ -214,7 +215,7 @@ class wLabel3DFlat(soya.World):
         self.flat_offset = offset
         self.flat_size = size
         self.flat_compensation = compensation
-
+        
     def get_xz_correction(self,angle):
         an = int(round(angle))
         if an<0: an+=360
@@ -241,25 +242,25 @@ class wLabel3DFlat(soya.World):
         
         return (vl * szr + vr * szl) / float(size)
 
-        
     def advance_time(self,proportion):
 
         if self.flat_follows:
             self.move(self.flat_follows)
             maxparent = pyworlds.worlds.scene
             
-            visible= self.flat_follows.visible
+            visible= self.flat_follows.visible and getattr(self.flat_follows,"label_visible", True)
             objparent = self.flat_follows
+            
             while objparent.is_inside(maxparent) and visible:
                 if hasattr(objparent.parent,"parent") and hasattr(objparent.parent,"visible"):
                     objparent = objparent.parent
 
-                    if objparent.visible == False: 
+                    if objparent.visible == False:
                         visible=False
                         break
                 else:
                     break
-                
+            
             self.visible=visible
             self.solid=visible
             if visible and self.xz_angular_distances_active:
