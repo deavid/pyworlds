@@ -156,14 +156,16 @@ class SceneBody(soya.Body):
 	
   def begin_round(self):
     global MOUSE_WHEEL
-    global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON
+    global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON, mainloop
     soya.Body.begin_round(self)
     array_events = []
     if pyworlds_engine == "soya":
         array_events = soya.process_event()
     elif pyworlds_engine == "pudding":
         import soya.pudding as pudding
-        array_events = pudding.process_event()
+        # Use mainloop.events instead of pudding.process_event() :
+        # array_events = pudding.process_event()
+        array_events = mainloop.events
     
     for event in array_events:
         
