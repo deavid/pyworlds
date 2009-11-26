@@ -241,9 +241,29 @@ class wLabel3DFlat(soya.World):
         size = szr + szl
         
         return (vl * szr + vr * szl) / float(size)
+    def begin_round(self):
+        if self.flat_follows:
+            self.move(self.flat_follows)
+            maxparent = pyworlds.worlds.scene
+            
+            visible= self.flat_follows.visible and getattr(self.flat_follows,"label_visible", True)
+            objparent = self.flat_follows
+            
+            while objparent.is_inside(maxparent) and visible:
+                if hasattr(objparent.parent,"parent") and hasattr(objparent.parent,"visible"):
+                    objparent = objparent.parent
+
+                    if objparent.visible == False:
+                        visible=False
+                        break
+                else:
+                    break
+            
+            self.visible=visible
+            self.solid=visible
 
     def advance_time(self,proportion):
-
+        if not self.visible: return
         if self.flat_follows:
             self.move(self.flat_follows)
             maxparent = pyworlds.worlds.scene
