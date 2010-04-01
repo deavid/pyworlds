@@ -23,6 +23,7 @@ KEY = {}
 MOUSE_X = 0
 MOUSE_Y = 0
 MOUSE_BUTTON = {}
+MOUSE_BUTTONUP = []
 MOUSE_WHEEL = 0
 
 # TODO: Place functions to access KEY, and return float or bool values. x>0.5 => True
@@ -156,7 +157,7 @@ class SceneBody(soya.Body):
 	
   def begin_round(self):
     global MOUSE_WHEEL
-    global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON, mainloop
+    global KEY,callback_round, MOUSE_X, MOUSE_Y, MOUSE_BUTTON,MOUSE_BUTTONUP, mainloop
     soya.Body.begin_round(self)
     array_events = []
     if pyworlds_engine == "soya":
@@ -166,6 +167,11 @@ class SceneBody(soya.Body):
         # Use mainloop.events instead of pudding.process_event() :
         # array_events = pudding.process_event()
         array_events = mainloop.events
+        
+    for ev1 in MOUSE_BUTTONUP:
+        if MOUSE_BUTTON.has_key(ev1):
+            del MOUSE_BUTTON[ev1]
+    MOUSE_BUTTONUP = []
     
     for event in array_events:
         
@@ -189,8 +195,9 @@ class SceneBody(soya.Body):
         
         elif event[0] == soya.sdlconst.MOUSEBUTTONUP:			
                     #print "Up: ",MOUSE_BUTTON[event[1]]
-                    if MOUSE_BUTTON.has_key(event[1]):
-                        del MOUSE_BUTTON[event[1]]
+                    MOUSE_BUTTONUP.append(event[1])
+                    #if MOUSE_BUTTON.has_key(event[1]):
+                    #    del MOUSE_BUTTON[event[1]]
                     MOUSE_X = event[2]			
                     MOUSE_Y = event[3]			
         
