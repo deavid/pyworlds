@@ -51,10 +51,10 @@ def is_pyWorlds_installed():
 	return True
 	
 	
-def init(create_basic=True):
+def init(width = 1020,height = 760,title="PyWorlds (Soya3D)",create_basic=True):
 	global scene,mainloop,pyworlds_engine
 	pyworlds_engine = "soya"
-	soya.init()
+	soya.init(width=width, height= height,title=title)
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
 	scene = basics.scene.scene
 	mainloop=soya.MainLoop(scene)
@@ -103,12 +103,12 @@ def init_gui():
 	viewport = soya.gui.CameraViewport(root, camera)
 	
 
-def init_pudding(width = 500,height = 500, options = {}):
+def init_pudding(width = 1020,height = 760,title="PyWorlds (Soya3D)", options = {}):
 	global root,viewport,camera,scene,mainloop, pyworlds_engine
         soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
 	pyworlds_engine = "pudding"
         import soya.pudding as pudding
-        soya.init()
+        soya.init(width=width, height= height, title=title)
 	pudding.init()
 	scene = basics.scene.scene
 	mainloop=pudding.main_loop.MainLoop(scene)
