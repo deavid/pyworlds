@@ -5,7 +5,7 @@ import soya.widget
 import math
 
 from utils import *
-import basics.scene
+import pyworlds.basics.scene
 
 global scene,camera,light
 global MOUSE_WHEEL

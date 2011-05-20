@@ -13,5 +13,5 @@ setup(
 			 
 			 # config ----
       package_dir={'': 'src'},
-      packages=[''],
+      packages=['pyworlds','pyworlds.basics'],
       )
