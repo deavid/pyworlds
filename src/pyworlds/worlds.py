@@ -56,7 +56,7 @@ def init(width = 1020,height = 760,title="PyWorlds (Soya3D)",create_basic=True):
 	pyworlds_engine = "soya"
 	soya.init(width=width, height= height,title=title)
 	soya.path.append(os.path.join(os.path.dirname(sys.argv[0]), "data"))
-	scene = basics.scene.scene
+	scene = pyworlds.basics.scene.scene
 	mainloop=soya.MainLoop(scene)
 	scene.mainloop=mainloop
 	scene.round_duration=.04
@@ -110,7 +110,7 @@ def init_pudding(width = 1020,height = 760,title="PyWorlds (Soya3D)", options = 
         import soya.pudding as pudding
         soya.init(width=width, height= height, title=title)
 	pudding.init()
-	scene = basics.scene.scene
+	scene = pyworlds.basics.scene.scene
 	mainloop=pudding.main_loop.MainLoop(scene)
 	scene.mainloop=mainloop
 	scene.round_duration=.04
