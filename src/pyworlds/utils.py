@@ -160,7 +160,7 @@ values."""
 	sz=size[2]
 	
 	
-	sphere = insert_into or World(parent)
+	sphere = insert_into or soya.World(parent)
 	
 	step1 = 6.28322 / slices
 	step2 = 3.14161 / stacks
